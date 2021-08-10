@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use EmptyIterator;
 use Generator;
 use Iterator;
 
@@ -45,7 +44,7 @@ final class Head extends AbstractOperation
                 }
 
                 if (true === $isEmpty) {
-                    return new EmptyIterator();
+                    return yield from [];
                 }
 
                 /**

@@ -12,6 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\fpt\FPT;
 
 use const PHP_EOL;
 
@@ -30,16 +31,12 @@ final class Lines extends AbstractOperation
      */
     public function __invoke(): Closure
     {
-        $mapCallback =
-            /**
-             * @param list<T> $value
-             */
-            static fn (array $value): string => implode('', $value);
-
-        /** @var Closure(Iterator<TKey, T>): Generator<int, string> $pipe */
+        /** @var Closure(Iterator<TKey, (T|string)>): Generator<int, string> $pipe */
         $pipe = Pipe::of()(
             Explode::of()(PHP_EOL, "\n", "\r\n"),
-            Map::of()($mapCallback)
+            Map::of()(
+                FPT::curry()('implode', 2)('')
+            )
         );
 
         // Point free style.

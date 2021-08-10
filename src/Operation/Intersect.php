@@ -37,14 +37,10 @@ final class Intersect extends AbstractOperation
              * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
              */
             static function (...$values): Closure {
-                $filterCallbackFactory = static fn (array $values): Closure =>
-                    /**
-                     * @param T $value
-                     */
-                    static fn ($value): bool => in_array($value, $values, true);
-
                 /** @var Closure(Iterator<TKey, T>): Generator<TKey, T> $filter */
-                $filter = Filter::of()($filterCallbackFactory($values));
+                $filter = Filter::of()(
+                    static fn ($value): bool => in_array($value, $values, true)
+                );
 
                 // Point free style.
                 return $filter;

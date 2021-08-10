@@ -22,5 +22,5 @@ interface Keyable
      *
      * @return TKey|null
      */
-    public function key(int $index = 0);
+    public function key(int $index = 0, $default = null);
 }

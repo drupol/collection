@@ -12,6 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\fpt\FPT;
 
 /**
  * @immutable
@@ -28,16 +29,13 @@ final class Words extends AbstractOperation
      */
     public function __invoke(): Closure
     {
-        $mapCallback =
-            /**
-             * @param list<string> $value
-             */
-            static fn (array $value): string => implode('', $value);
-
         /** @var Closure(Iterator<TKey, T>): Generator<TKey, string> $pipe */
         $pipe = Pipe::of()(
             Explode::of()("\t", "\n", ' '),
-            Map::of()($mapCallback),
+            Map::of()(
+                // TODO: See if we can get rid of the parameter 2.
+                FPT::curry()('implode', 2)('')
+            ),
             Compact::of()()
         );
 

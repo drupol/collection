@@ -12,6 +12,8 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\fpt\FPT;
+use loophp\fpt\Operator;
 
 /**
  * @immutable
@@ -37,19 +39,8 @@ final class Has extends AbstractOperation
              * @return Closure(Iterator<TKey, T>): Generator<TKey, bool>
              */
             static function (callable ...$callbacks): Closure {
-                /** @var Closure(Iterator<TKey, T>): Generator<TKey, bool> $pipe */
-                $pipe = MatchOne::of()(static fn (): bool => true)(
-                    ...array_map(
-                        static fn (callable $callback): callable =>
-                            /**
-                             * @param T $value
-                             * @param TKey $key
-                             * @param Iterator<TKey, T> $iterator
-                             */
-                            static fn ($value, $key, Iterator $iterator): bool => $callback($value, $key, $iterator) === $value,
-                        $callbacks
-                    )
-                );
+                /** @var Closure(Iterator<TKey, T>): Generator<int|TKey, bool> $pipe */
+                $pipe = MatchOne::of()(FPT::thunk()(true))(...FPT::map()(static fn (callable $callback): callable => static fn ($value, $key, Iterator $iterator): bool => FPT::operator()(Operator::OP_EQUAL)($value)($callback($value, $key, $iterator)))($callbacks));
 
                 // Point free style.
                 return $pipe;

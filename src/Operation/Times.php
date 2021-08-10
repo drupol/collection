@@ -10,9 +10,9 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use EmptyIterator;
 use Generator;
 use Iterator;
+use loophp\fpt\FPT;
 
 /**
  * @immutable
@@ -41,16 +41,14 @@ final class Times extends AbstractOperation
                  */
                 static fn (?callable $callback = null): Closure =>
                     /**
-                     * @param Iterator<TKey, T>|null $iterator
-                     *
                      * @return Generator<int, int|T>
                      */
-                    static function (?Iterator $iterator = null) use ($number, $callback): Generator {
+                    static function () use ($number, $callback): Generator {
                         if (1 > $number) {
-                            return new EmptyIterator();
+                            return yield from [];
                         }
 
-                        $callback ??= static fn (int $value): int => $value;
+                        $callback ??= FPT::identity();
 
                         for ($current = 1; $current <= $number; ++$current) {
                             yield $callback($current);

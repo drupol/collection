@@ -13,6 +13,8 @@ use Closure;
 use Generator;
 use Iterator;
 use loophp\collection\Contract\Operation\Splitable;
+use loophp\fpt\FPT;
+use loophp\fpt\Operator;
 
 /**
  * @immutable
@@ -37,19 +39,7 @@ final class Explode extends AbstractOperation
              */
             static function (...$explodes): Closure {
                 /** @var Closure(Iterator<TKey, T>): Generator<int, list<T>> $split */
-                $split = Split::of()(Splitable::REMOVE)(
-                    ...array_map(
-                        /**
-                         * @param T $explode
-                         */
-                        static fn ($explode): Closure =>
-                            /**
-                             * @param T $value
-                             */
-                            static fn ($value): bool => $value === $explode,
-                        $explodes
-                    )
-                );
+                $split = Split::of()(Splitable::REMOVE)(...FPT::map()(FPT::operator()(Operator::OP_EQUAL))($explodes));
 
                 // Point free style.
                 return $split;

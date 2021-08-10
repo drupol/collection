@@ -20,7 +20,8 @@
         }
     ],
     "require": {
-        "php": ">= 7.4"
+        "php": ">= 7.4",
+        "loophp/fpt": "dev-master"
     },
     "require-dev": {
         "amphp/parallel-functions": "^1",
@@ -48,6 +49,8 @@
             "spec\\loophp\\collection\\": "./spec/loophp/collection/"
         }
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "scripts": {
         "changelog-unreleased": "docker-compose run auto_changelog -c .auto-changelog -u",
         "changelog-version": "docker-compose run auto_changelog -c .auto-changelog -v",

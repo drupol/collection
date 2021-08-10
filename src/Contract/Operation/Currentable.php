@@ -22,5 +22,5 @@ interface Currentable
      *
      * @return T|null
      */
-    public function current(int $index = 0);
+    public function current(int $index = 0, $default = null);
 }

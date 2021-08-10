@@ -12,6 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\fpt\FPT;
 
 /**
  * @immutable
@@ -29,22 +30,7 @@ final class Unwindow extends AbstractOperation
     public function __invoke(): Closure
     {
         /** @var Closure(Iterator<TKey, list<T>>): Generator<TKey, T> $unwindow */
-        $unwindow = Map::of()(
-            /**
-             * @param iterable<TKey, list<T>> $iterable
-             *
-             * @return T|null
-             */
-            static function (iterable $iterable) {
-                $value = null;
-
-                /** @var T $value */
-                foreach ($iterable as $value) {
-                }
-
-                return $value;
-            }
-        );
+        $unwindow = Map::of()(FPT::end()(null));
 
         // Point free style.
         return $unwindow;

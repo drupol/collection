@@ -35,10 +35,10 @@ final class RSample extends AbstractOperation
              * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
              */
             static function (float $probability): Closure {
-                $callback = static fn (): bool => (mt_rand() / mt_getrandmax()) < $probability;
-
                 /** @var Closure(Iterator<TKey, T>): Generator<TKey, T> $filter */
-                $filter = Filter::of()($callback);
+                $filter = Filter::of()(
+                    static fn (): bool => (mt_rand() / mt_getrandmax()) < $probability
+                );
 
                 // Point free style.
                 return $filter;

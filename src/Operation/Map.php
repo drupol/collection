@@ -12,6 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\fpt\FPT;
 
 /**
  * @immutable
@@ -32,20 +33,6 @@ final class Map extends AbstractOperation
      */
     public function __invoke(): Closure
     {
-        return
-            /**
-             * @param callable(T, TKey, Iterator<TKey, T>): V $callback
-             */
-            static fn (callable $callback): Closure =>
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 *
-                 * @return Generator<TKey, V>
-                 */
-                static function (Iterator $iterator) use ($callback): Generator {
-                    foreach ($iterator as $key => $value) {
-                        yield $key => $callback($value, $key, $iterator);
-                    }
-                };
+        return FPT::map();
     }
 }

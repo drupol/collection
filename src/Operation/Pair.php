@@ -12,6 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\fpt\FPT;
 
 /**
  * @immutable
@@ -51,7 +52,7 @@ final class Pair extends AbstractOperation
         /** @var Closure(Iterator<TKey, T>): Generator<T, T|null> $pipe */
         $pipe = Pipe::of()(
             Chunk::of()(2),
-            Map::of()(static fn (array $value): array => array_values($value)),
+            Map::of()(FPT::curry()('array_values')),
             Associate::of()($callbackForKeys)($callbackForValues)
         );
 

@@ -13,6 +13,7 @@ use Closure;
 use Generator;
 use Iterator;
 use loophp\collection\Iterator\IterableIterator;
+use loophp\fpt\FPT;
 
 /**
  * @immutable
@@ -54,10 +55,24 @@ final class Unpack extends AbstractOperation
 
         /** @var Closure(Iterator<TKey, T>): Generator<NewTKey, NewT> $pipe */
         $pipe = Pipe::of()(
-            Map::of()($toIterableIterator),
-            Map::of()(Chunk::of()(2)),
-            Flatten::of()(1),
-            Associate::of()($callbackForKeys)($callbackForValues)
+            Map::of()(
+                static fn (iterable $value): Iterator => new IterableIterator($value)
+            ),
+            Map::of()(
+                Chunk::of()(2)
+            ),
+            Unwrap::of(),
+            Associate::of()(
+                FPT::compose()(
+                    'current',
+                    FPT::arg()(2)
+                )
+            )(
+                FPT::compose()(
+                    'end',
+                    FPT::arg()(2)
+                )
+            )
         );
 
         // Point free style.

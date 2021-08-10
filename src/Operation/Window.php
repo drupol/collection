@@ -12,8 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
-
-use function array_slice;
+use loophp\fpt\FPT;
 
 /**
  * @immutable
@@ -45,13 +44,15 @@ final class Window extends AbstractOperation
                         return yield from $iterator;
                     }
 
-                    ++$size;
-                    $size *= -1;
-
                     $stack = [];
 
+                    /**
+                     * @var Closure(list<T>): list<T> $slice
+                     */
+                    $slice = FPT::curry()('array_slice', 2)(offset: -1 * ++$size);
+
                     foreach ($iterator as $key => $current) {
-                        yield $key => $stack = array_slice([...$stack, $current], $size);
+                        yield $key => $stack = $slice(array: [...$stack, $current]);
                     }
                 };
     }

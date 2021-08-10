@@ -12,6 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\fpt\FPT;
 
 /**
  * @immutable
@@ -28,27 +29,8 @@ final class Flip extends AbstractOperation
      */
     public function __invoke(): Closure
     {
-        $callbackForKeys =
-            /**
-             * @param mixed $carry
-             * @param TKey $key
-             * @param T $value
-             *
-             * @return T
-             */
-            static fn ($carry, $key, $value) => $value;
-
-        $callbackForValues =
-            /**
-             * @param mixed $carry
-             * @param TKey $key
-             *
-             * @return TKey
-             */
-            static fn ($carry, $key) => $key;
-
         /** @var Closure(Iterator<TKey, T>): Generator<T, TKey> $associate */
-        $associate = Associate::of()($callbackForKeys)($callbackForValues);
+        $associate = Associate::of()(FPT::arg()(2))(FPT::arg()(1));
 
         // Point free style.
         return $associate;

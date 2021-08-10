@@ -11,6 +11,7 @@ namespace loophp\collection\Operation;
 
 use Closure;
 use Iterator;
+use loophp\fpt\Curry;
 
 /**
  * @immutable
@@ -27,6 +28,6 @@ final class All extends AbstractOperation
      */
     public function __invoke(): Closure
     {
-        return static fn (Iterator $iterator): array => iterator_to_array($iterator);
+        return Curry::of()('iterator_to_array');
     }
 }

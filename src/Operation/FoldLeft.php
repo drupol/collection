@@ -12,6 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
+use phpDocumentor\Reflection\DocBlock\Tags\Generic;
 
 /**
  * @immutable

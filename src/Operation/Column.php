@@ -12,6 +12,9 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\fpt\Arg;
+use loophp\fpt\FPT;
+use loophp\fpt\Operator;
 
 /**
  * @immutable
@@ -35,22 +38,15 @@ final class Column extends AbstractOperation
              * @return Closure(Iterator<TKey, T>): Generator<int, mixed>
              */
             static function ($column): Closure {
-                $filterCallbackBuilder =
-                    /**
-                     * @param mixed $column
-                     */
-                    static fn ($column): Closure =>
-                        /**
-                         * @param T $value
-                         * @param TKey $key
-                         * @param Iterator<TKey, T> $iterator
-                         */
-                        static fn ($value, $key, Iterator $iterator): bool => $key === $column;
-
-                /** @var Closure(Iterator<TKey, T>): Generator<int, mixed> $pipe */
+                /** @var Closure(Iterator<TKey, T>): Generator<int, iterable<TKey, T>> $pipe */
                 $pipe = Pipe::of()(
                     Transpose::of(),
-                    Filter::of()($filterCallbackBuilder($column)),
+                    Filter::of()(
+                        FPT::compose()(
+                            FPT::operator()(Operator::OP_EQUAL)($column),
+                            FPT::arg()(1)
+                        )
+                    ),
                     Head::of(),
                     Flatten::of()(1)
                 );

@@ -36,16 +36,11 @@ final class DiffKeys extends AbstractOperation
              *
              * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
              */
-            static function (...$keys): Closure {
-                $filterCallbackFactory = static fn (array $keys): Closure =>
-                    /**
-                     * @param T $value
-                     * @param TKey $key
-                     */
-                    static fn ($value, $key): bool => false === in_array($key, $keys, true);
-
+            static function (...$values): Closure {
                 /** @var Closure(Iterator<TKey, T>): Generator<TKey, T> $filter */
-                $filter = Filter::of()($filterCallbackFactory($keys));
+                $filter = Filter::of()(
+                    static fn ($value, $key): bool => !in_array($key, $values, true)
+                );
 
                 // Point free style.
                 return $filter;

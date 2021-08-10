@@ -11,6 +11,8 @@ namespace loophp\collection\Operation;
 
 use Closure;
 use Iterator;
+use loophp\fpt\Curry;
+use loophp\fpt\FPT;
 
 /**
  * @immutable
@@ -35,22 +37,6 @@ final class Pipe extends AbstractOperation
              *
              * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
              */
-            static fn (callable ...$operations): Closure => array_reduce(
-                $operations,
-                /**
-                 * @param callable(Iterator<TKey, T>): Iterator<TKey, T> $f
-                 * @param callable(Iterator<TKey, T>): Iterator<TKey, T> $g
-                 *
-                 * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
-                 */
-                static fn (callable $f, callable $g): Closure =>
-                    /**
-                     * @param Iterator<TKey, T> $iterator
-                     *
-                     * @return Iterator<TKey, T>
-                     */
-                    static fn (Iterator $iterator): Iterator => $g($f($iterator)),
-                static fn (Iterator $iterator): Iterator => $iterator
-            );
+            static fn (callable ...$operations): Closure => Curry::of()('array_reduce', 3)($operations, FPT::flip()('call_user_func'));
     }
 }

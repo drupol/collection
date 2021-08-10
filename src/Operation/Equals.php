@@ -12,6 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\fpt\FPT;
 
 /**
  * @immutable
@@ -56,7 +57,7 @@ final class Equals extends AbstractOperation
                          */
                         static fn ($current): bool => Contains::of()($current)($other)->current();
 
-                    return yield from Every::of()(static fn (): bool => false)($containsCallback)($iterator);
+                    return yield from Every::of()(FPT::thunk()(false))($containsCallback)($iterator);
                 };
             };
     }

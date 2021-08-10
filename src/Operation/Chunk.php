@@ -11,7 +11,6 @@ namespace loophp\collection\Operation;
 
 use ArrayIterator;
 use Closure;
-use EmptyIterator;
 use Generator;
 use Iterator;
 
@@ -53,7 +52,7 @@ final class Chunk extends AbstractOperation
                         $size = $sizesIterator->current();
 
                         if (0 >= $size) {
-                            return new EmptyIterator();
+                            return yield from [];
                         }
 
                         if (count($values) !== $size) {

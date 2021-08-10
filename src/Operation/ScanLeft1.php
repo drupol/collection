@@ -12,6 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\fpt\FPT;
 
 /**
  * @immutable
@@ -50,7 +51,7 @@ final class ScanLeft1 extends AbstractOperation
                     /** @var Closure(Iterator<TKey, T>): Generator<int|TKey, T|V> $pipe */
                     $pipe = Pipe::of()(
                         Tail::of(),
-                        Reduction::of()($callback)($initial),
+                        FPT::reduction()($callback)($initial),
                         Prepend::of()($initial)
                     );
 

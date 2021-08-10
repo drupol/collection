@@ -39,15 +39,9 @@ final class Compact extends AbstractOperation
              * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
              */
             static function (...$values): Closure {
-                $filterCallback = static fn (array $values): Closure => static fn ($value): bool => !in_array($value, $values, true);
-
                 /** @var Closure(Iterator<TKey, T>): Generator<TKey, T> $filter */
                 $filter = Filter::of()(
-                    $filterCallback(
-                        [] === $values ?
-                            Nullsy::VALUES :
-                            $values
-                    )
+                    static fn ($value): bool => !in_array($value, [] === $values ? Nullsy::VALUES : $values, true)
                 );
 
                 // Point free style.
