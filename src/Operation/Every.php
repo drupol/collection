@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace loophp\collection\Operation;
 
+use ArrayIterator;
 use Closure;
 use Generator;
 use Iterator;
@@ -83,7 +84,7 @@ final class Every extends AbstractOperation
                         $pipe = Pipe::of()(
                             Map::of()($mapCallback($callbackReducer($callbacks))($callbackReducer($matchers))),
                             DropWhile::of()(static fn (bool $value): bool => true === $value),
-                            Append::of()(true),
+                            Append::of()(new ArrayIterator([true])),
                             Head::of(),
                         );
 

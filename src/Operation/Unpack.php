@@ -12,7 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
-use loophp\collection\Iterator\IterableIterator;
+use loophp\collection\Iterator\IteratorFactory;
 
 /**
  * @immutable
@@ -32,8 +32,6 @@ final class Unpack extends AbstractOperation
      */
     public function __invoke(): Closure
     {
-        $toIterableIterator = static fn (iterable $value): Iterator => new IterableIterator($value);
-
         $callbackForKeys =
             /**
              * @param NewTKey $initial
@@ -54,7 +52,7 @@ final class Unpack extends AbstractOperation
 
         /** @var Closure(Iterator<TKey, T>): Generator<NewTKey, NewT> $pipe */
         $pipe = Pipe::of()(
-            Map::of()($toIterableIterator),
+            Map::of()(IteratorFactory::iterableIterator()),
             Map::of()(Chunk::of()(2)),
             Flatten::of()(1),
             Associate::of()($callbackForKeys)($callbackForValues)

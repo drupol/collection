@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace loophp\collection\Operation;
 
+use ArrayIterator;
 use Closure;
 use Generator;
 use Iterator;
@@ -51,7 +52,7 @@ final class ScanRight extends AbstractOperation
                         Reverse::of(),
                         Reduction::of()($callback)($initial),
                         Reverse::of(),
-                        Append::of()($initial)
+                        Append::of()(new ArrayIterator([$initial]))
                     );
 
                     // Point free style.

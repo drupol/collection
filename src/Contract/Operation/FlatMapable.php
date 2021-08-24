@@ -20,7 +20,7 @@ interface FlatMapable
 {
     /**
      * Transform the collection using a callback and keep the return value, then flatten it one level.
-     * The supplied callback needs to return an `iterable`: either an `array`or a class that implements Traversable.
+     * The supplied callback needs to return an `iterable`: either an `array` or a class that implements Traversable.
      *
      * @see https://loophp-collection.readthedocs.io/en/stable/pages/api.html#flatmap
      *

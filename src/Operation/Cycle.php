@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use InfiniteIterator;
 use Iterator;
+use loophp\collection\Iterator\IteratorFactory;
 
 /**
  * @immutable
@@ -28,12 +28,6 @@ final class Cycle extends AbstractOperation
      */
     public function __invoke(): Closure
     {
-        return
-            /**
-             * @param Iterator<TKey, T> $iterator
-             *
-             * @return Iterator<TKey, T>
-             */
-            static fn (Iterator $iterator): Iterator => new InfiniteIterator($iterator);
+        return IteratorFactory::infiniteIterator();
     }
 }

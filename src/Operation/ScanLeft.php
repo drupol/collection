@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace loophp\collection\Operation;
 
+use ArrayIterator;
 use Closure;
 use Generator;
 use Iterator;
@@ -49,7 +50,7 @@ final class ScanLeft extends AbstractOperation
                     /** @var Closure(Iterator<TKey, T>): Generator<int|TKey, V|W> $pipe */
                     $pipe = Pipe::of()(
                         Reduction::of()($callback)($initial),
-                        Prepend::of()($initial)
+                        Prepend::of()(new ArrayIterator([$initial]))
                     );
 
                     return $pipe;

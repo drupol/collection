@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace loophp\collection\Operation;
 
+use ArrayIterator;
 use Closure;
 use Generator;
 use Iterator;
@@ -51,7 +52,7 @@ final class Get extends AbstractOperation
                     /** @var Closure(Iterator<TKey, T>): (Generator<TKey, T|null>) $pipe */
                     $pipe = Pipe::of()(
                         Filter::of()($filterCallback),
-                        Append::of()($default),
+                        Append::of()(new ArrayIterator([$default])),
                         Head::of()
                     );
 

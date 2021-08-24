@@ -11,7 +11,7 @@ namespace loophp\collection\Operation;
 
 use Closure;
 use Iterator;
-use loophp\collection\Iterator\MultipleIterableIterator;
+use loophp\collection\Iterator\IteratorFactory;
 
 /**
  * @immutable
@@ -32,12 +32,8 @@ final class Merge extends AbstractOperation
             /**
              * @param iterable<TKey, T> ...$sources
              */
-            static fn (iterable ...$sources): Closure =>
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 *
-                 * @return Iterator<TKey, T>
-                 */
-                static fn (Iterator $iterator): Iterator => new MultipleIterableIterator($iterator, ...$sources);
+            static fn (iterable ...$sources): Closure => IteratorFactory::appendIterator()(
+                IteratorFactory::multipleIterableIterator()($sources)
+            );
     }
 }

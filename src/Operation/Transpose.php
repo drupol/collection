@@ -12,7 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Generator;
 use Iterator;
-use loophp\collection\Iterator\IterableIterator;
+use loophp\collection\Iterator\IteratorFactory;
 use MultipleIterator;
 
 /**
@@ -51,20 +51,13 @@ final class Transpose extends AbstractOperation
              */
             static fn (array $carry, array $key, array $value): array => $value;
 
-        /** @var Closure(Iterator<TKey, T>): Generator<TKey, list<T>> $pipe */
-        $pipe = Pipe::of()(
-            Reduce::of()(
-                static function (MultipleIterator $acc, iterable $iterable): MultipleIterator {
-                    $acc->attachIterator(new IterableIterator($iterable));
-
-                    return $acc;
-                }
-            )(new MultipleIterator(MultipleIterator::MIT_NEED_ANY)),
-            Flatten::of()(1),
-            Associate::of()($callbackForKeys)($callbackForValues)
+        /** @var Generator<TKey, list<T>> $associate */
+        $associate = Pipe::of()(
+            Map::of()(IteratorFactory::iterableIterator()),
+            IteratorFactory::multipleIterators()(MultipleIterator::MIT_NEED_ANY),
+            Associate::of()($callbackForKeys)($callbackForValues),
         );
 
-        // Point free style.
-        return $pipe;
+        return $associate;
     }
 }

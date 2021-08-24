@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace loophp\collection;
 
+use ArrayIterator;
 use Closure;
 use Doctrine\Common\Collections\Criteria;
 use Generator;
@@ -182,7 +183,7 @@ final class Collection implements CollectionInterface
 
     public function append(...$items): CollectionInterface
     {
-        return new self(Append::of()(...$items), [$this->getIterator()]);
+        return new self(Append::of()(new ArrayIterator($items)), [$this->getIterator()]);
     }
 
     public function apply(callable ...$callbacks): CollectionInterface
@@ -757,7 +758,7 @@ final class Collection implements CollectionInterface
 
     public function prepend(...$items): CollectionInterface
     {
-        return new self(Prepend::of()(...$items), [$this->getIterator()]);
+        return new self(Prepend::of()(new ArrayIterator($items)), [$this->getIterator()]);
     }
 
     public function product(iterable ...$iterables): CollectionInterface

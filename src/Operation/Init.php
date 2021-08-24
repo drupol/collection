@@ -13,6 +13,7 @@ use CachingIterator;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\collection\Iterator\IteratorFactory;
 
 /**
  * @immutable
@@ -37,20 +38,12 @@ final class Init extends AbstractOperation
              * @param TKey $key
              * @param CachingIterator<TKey, T> $iterator
              */
-            static fn ($value, $key, CachingIterator $iterator): bool => $iterator->hasNext();
-
-        $buildCachingIterator =
-            /**
-             * @param Iterator<TKey, T> $iterator
-             *
-             * @return CachingIterator<TKey, T>
-             */
-            static fn (Iterator $iterator): CachingIterator => new CachingIterator($iterator, CachingIterator::FULL_CACHE);
+            static fn ($value, $key, CachingIterator $iterator): bool => $iterator->getInnerIterator()->valid();
 
         /** @var Closure(Iterator<TKey, T>): Generator<TKey, T> $takeWhile */
         $takeWhile = Pipe::of()(
-            $buildCachingIterator,
-            TakeWhile::of()($callback)
+            IteratorFactory::cachingIterator()(CachingIterator::FULL_CACHE),
+            (new TakeWhile())()($callback)
         );
 
         // Point free style.

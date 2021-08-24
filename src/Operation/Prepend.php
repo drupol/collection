@@ -11,7 +11,7 @@ namespace loophp\collection\Operation;
 
 use Closure;
 use Iterator;
-use loophp\collection\Iterator\MultipleIterableIterator;
+use loophp\collection\Iterator\IteratorFactory;
 
 /**
  * @immutable
@@ -28,18 +28,6 @@ final class Prepend extends AbstractOperation
      */
     public function __invoke(): Closure
     {
-        return
-            /**
-             * @param T ...$items
-             *
-             * @return Closure(Iterator<TKey, T>): Iterator<int|TKey, T>
-             */
-            static fn (...$items): Closure =>
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 *
-                 * @return Iterator<int|TKey, T>
-                 */
-                static fn (Iterator $iterator): Iterator => new MultipleIterableIterator($items, $iterator);
+        return IteratorFactory::prependIterator();
     }
 }

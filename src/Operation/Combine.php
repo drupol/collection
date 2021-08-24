@@ -13,6 +13,7 @@ use ArrayIterator;
 use Closure;
 use Generator;
 use Iterator;
+use loophp\collection\Iterator\IteratorFactory;
 use MultipleIterator;
 
 /**
@@ -39,35 +40,12 @@ final class Combine extends AbstractOperation
              * @return Closure(Iterator<TKey, T>): Generator<null|U, null|T>
              */
             static function (...$keys): Closure {
-                $buildMultipleIterator =
-                    /**
-                     * @param Iterator<int, U> $keyIterator
-                     */
-                    static function (Iterator $keyIterator): Closure {
-                        return
-                            /**
-                             * @param Iterator<TKey, T> $iterator
-                             *
-                             * @return MultipleIterator
-                             */
-                            static function (Iterator $iterator) use ($keyIterator): MultipleIterator {
-                                $mit = new MultipleIterator(MultipleIterator::MIT_NEED_ANY);
-
-                                $mit->attachIterator($keyIterator);
-                                $mit->attachIterator($iterator);
-
-                                return $mit;
-                            };
-                    };
-
-                /** @var Closure(Iterator<TKey, T>): Generator<null|U, null|T> $pipe */
                 $pipe = Pipe::of()(
-                    $buildMultipleIterator(new ArrayIterator($keys)),
-                    Flatten::of()(1),
+                    IteratorFactory::multipleIteratorTest()(MultipleIterator::MIT_NEED_ANY)(new ArrayIterator($keys)),
+                    Unwrap::of(),
                     Pair::of(),
                 );
 
-                // Point free style.
                 return $pipe;
             };
     }

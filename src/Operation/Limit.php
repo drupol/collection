@@ -11,7 +11,7 @@ namespace loophp\collection\Operation;
 
 use Closure;
 use Iterator;
-use LimitIterator;
+use loophp\collection\Iterator\IteratorFactory;
 
 /**
  * @immutable
@@ -38,12 +38,6 @@ final class Limit extends AbstractOperation
                 /**
                  * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
                  */
-                static fn (int $offset = 0): Closure =>
-                    /**
-                     * @param Iterator<TKey, T> $iterator
-                     *
-                     * @return Iterator<TKey, T>
-                     */
-                    static fn (Iterator $iterator): Iterator => new LimitIterator($iterator, $offset, $count);
+                static fn (int $offset = 0): Closure => IteratorFactory::limitIterator()($offset)($count);
     }
 }
