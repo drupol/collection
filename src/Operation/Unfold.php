@@ -10,7 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
+use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -20,38 +21,34 @@ use Generator;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class Unfold extends AbstractOperation
+final class Unfold implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(T...): Closure(callable(mixed|T...): (mixed|array<TKey, T>)): Closure(): Generator<int, T>
+     * @param T ...$parameters
+     *
+     * @return Closure(callable(mixed|T...): (mixed|array<TKey, T>)): Closure(): Iterator<int, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(...$parameters): Closure
     {
         return
             /**
-             * @param T ...$parameters
+             * @param callable(mixed|T...): (mixed|array<TKey, T>) $callback
              *
-             * @return Closure(callable(mixed|T...): (array<TKey, T>)): Closure(): Generator<int, T>
+             * @return Closure(): Iterator<int, T>
              */
-            static fn (...$parameters): Closure =>
+            static fn (callable $callback): Closure =>
                 /**
-                 * @param callable(mixed|T...): (mixed|array<TKey, T>) $callback
-                 *
-                 * @return Closure(): Generator<int, T>
+                 * @return Iterator<int, T>
                  */
-                static fn (callable $callback): Closure =>
-                    /**
-                     * @return Generator<int, T>
-                     */
-                    static function () use ($parameters, $callback): Generator {
-                        while (true) {
-                            /** @var T $parameters */
-                            $parameters = $callback(...array_values((array) $parameters));
+                static function () use ($parameters, $callback): Iterator {
+                    while (true) {
+                        /** @var T $parameters */
+                        $parameters = $callback(...array_values((array) $parameters));
 
-                            yield $parameters;
-                        }
-                    };
+                        yield $parameters;
+                    }
+                };
     }
 }

@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -21,36 +21,30 @@ use Iterator;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class FoldLeft extends AbstractOperation
+final class FoldLeft implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(callable((T|null), T, TKey, Iterator<TKey, T>):(T|null)): Closure(T): Closure(Iterator<TKey, T>): Generator<TKey, T>
+     * @template V
+     *
+     * @param callable((T|V)=, T=, TKey=, Iterator<TKey, T>=): V $callback
+     *
+     * @return Closure(V): Closure(Iterator<TKey, T>): Iterator<int|TKey, T|V>
      */
-    public function __invoke(): Closure
+    public function __invoke(callable $callback): Closure
     {
         return
             /**
-             * @param callable(T|null, T, TKey, Iterator<TKey, T>):(T|null) $callback
+             * @param V $initial
              *
-             * @return Closure(T): Closure(Iterator<TKey, T>): Generator<TKey, T>
+             * @return Closure(Iterator<TKey, T>): Iterator<int|TKey, T|V>
              */
-            static fn (callable $callback): Closure =>
-                /**
-                 * @param T|null $initial
-                 *
-                 * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
-                 */
-                static function ($initial = null) use ($callback): Closure {
-                    /** @var Closure(Iterator<TKey, T>): Generator<TKey, T> $pipe */
-                    $pipe = Pipe::of()(
-                        ScanLeft::of()($callback)($initial),
-                        Last::of()
-                    );
-
-                    // Point free style.
-                    return $pipe;
-                };
+            static function ($initial = null) use ($callback): Closure {
+                return Pipe::ofTyped2(
+                    (new ScanLeft())($callback)($initial),
+                    (new Last())
+                );
+            };
     }
 }

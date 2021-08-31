@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,37 +19,30 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Contains extends AbstractOperation
+final class Contains implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(T ...$values): Closure(Iterator<TKey, T>): Generator<TKey, bool>
+     * @param T ...$values
+     *
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, bool>
      */
-    public function __invoke(): Closure
+    public function __invoke(...$values): Closure
     {
-        return
+        $callback =
             /**
-             * @param T ...$values
-             *
-             * @return Closure(Iterator<TKey, T>): Generator<TKey, bool>
+             * @param T $left
              */
-            static function (...$values): Closure {
-                $callback =
-                    /**
-                     * @param T $left
-                     */
-                    static fn ($left): Closure =>
-                        /**
-                         * @param T $right
-                         */
-                        static fn ($right): bool => $left === $right;
+            static fn ($left): Closure =>
+                /**
+                 * @param T $right
+                 */
+                static fn ($right): bool => $left === $right;
 
-                /** @var Closure(Iterator<TKey, T>): Generator<TKey, bool> $matchOne */
-                $matchOne = MatchOne::of()(static fn (): bool => true)(...array_map($callback, $values));
+        $matchOne = (new MatchOne())(static fn (): bool => true)(...array_map($callback, $values));
 
-                // Point free style.
-                return $matchOne;
-            };
+        // Point free style.
+        return $matchOne;
     }
 }

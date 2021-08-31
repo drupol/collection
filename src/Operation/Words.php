@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,12 +19,12 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Words extends AbstractOperation
+final class Words implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<TKey, string>
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, string>
      */
     public function __invoke(): Closure
     {
@@ -34,14 +34,10 @@ final class Words extends AbstractOperation
              */
             static fn (array $value): string => implode('', $value);
 
-        /** @var Closure(Iterator<TKey, T>): Generator<TKey, string> $pipe */
-        $pipe = Pipe::of()(
-            Explode::of()("\t", "\n", ' '),
-            Map::of()($mapCallback),
-            Compact::of()()
+        return Pipe::ofTyped3(
+            (new Explode())("\t", "\n", ' '),
+            (new Map())($mapCallback),
+            (new Compact())()
         );
-
-        // Point free style.
-        return $pipe;
     }
 }

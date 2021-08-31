@@ -12,6 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Iterator;
 use LimitIterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,25 +20,21 @@ use LimitIterator;
  * @template TKey
  * @template T
  */
-final class Drop extends AbstractOperation
+final class Drop implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(int): Closure(Iterator<TKey, T>): Iterator<TKey, T>
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(int $count): Closure
     {
         return
             /**
-             * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
+             * @param Iterator<TKey, T> $iterator
+             *
+             * @return Iterator<TKey, T>
              */
-            static fn (int $count): Closure =>
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 *
-                 * @return Iterator<TKey, T>
-                 */
-                static fn (Iterator $iterator): Iterator => new LimitIterator($iterator, $count);
+            static fn (Iterator $iterator): Iterator => new LimitIterator($iterator, $count);
     }
 }

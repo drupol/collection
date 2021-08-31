@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -21,26 +21,18 @@ use Iterator;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class RSample extends AbstractOperation
+final class RSample implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(float): Closure(Iterator<TKey, T>): Generator<TKey, T>
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(float $probability): Closure
     {
-        return
-            /**
-             * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
-             */
-            static function (float $probability): Closure {
-                $callback = static fn (): bool => (mt_rand() / mt_getrandmax()) < $probability;
+        $callback = static fn (): bool => (mt_rand() / mt_getrandmax()) < $probability;
 
-                $filter = (new Filter())()($callback);
-
-                // Point free style.
-                return $filter;
-            };
+        // Point free style.
+        return (new Filter())($callback);
     }
 }

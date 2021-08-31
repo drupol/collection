@@ -12,8 +12,8 @@ namespace loophp\collection\Operation;
 use ArrayIterator;
 use Closure;
 use EmptyIterator;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 use function count;
 
@@ -23,53 +23,48 @@ use function count;
  * @template TKey
  * @template T
  */
-final class Chunk extends AbstractOperation
+final class Chunk implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(int...): Closure(Iterator<TKey, T>): Generator<int, list<T>>
+     * @return Closure(Iterator<TKey, T>): Iterator<int, list<T>>
      */
-    public function __invoke(): Closure
+    public function __invoke(int ...$sizes): Closure
     {
         return
             /**
-             * @return Closure(Iterator<TKey, T>): Generator<int, list<T>>
+             * @param Iterator<TKey, T> $iterator
+             *
+             * @return Iterator<int, list<T>>
              */
-            static fn (int ...$sizes): Closure =>
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 *
-                 * @return Generator<int, list<T>>
-                 */
-                static function (Iterator $iterator) use ($sizes): Generator {
-                    /** @var Iterator<int, int> $sizesIterator */
-                    $sizesIterator = Cycle::of()(new ArrayIterator($sizes));
-                    $sizesIterator->rewind();
+            static function (Iterator $iterator) use ($sizes): Iterator {
+                $sizesIterator = (new Cycle())(new ArrayIterator($sizes));
+                $sizesIterator->rewind();
 
-                    $values = [];
+                $values = [];
 
-                    foreach ($iterator as $value) {
-                        $size = $sizesIterator->current();
+                foreach ($iterator as $value) {
+                    $size = $sizesIterator->current();
 
-                        if (0 >= $size) {
-                            return new EmptyIterator();
-                        }
-
-                        if (count($values) !== $size) {
-                            $values[] = $value;
-
-                            continue;
-                        }
-
-                        $sizesIterator->next();
-
-                        yield $values;
-
-                        $values = [$value];
+                    if (0 >= $size) {
+                        return new EmptyIterator();
                     }
 
-                    return yield $values;
-                };
+                    if (count($values) !== $size) {
+                        $values[] = $value;
+
+                        continue;
+                    }
+
+                    $sizesIterator->next();
+
+                    yield $values;
+
+                    $values = [$value];
+                }
+
+                return yield $values;
+            };
     }
 }

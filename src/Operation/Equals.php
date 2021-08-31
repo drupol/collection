@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,45 +19,40 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Equals extends AbstractOperation
+final class Equals implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Closure(Iterator<TKey, T>): Generator<int, bool>
+     * @param Iterator<TKey, T> $other
+     *
+     * @return Closure(Iterator<TKey, T>): Closure(Iterator<TKey, T>): Iterator<int, bool>
      */
-    public function __invoke(): Closure
+    public function __invoke(Iterator $other): Closure
     {
         return
             /**
-             * @param Iterator<TKey, T> $other
+             * @param Iterator<TKey, T> $iterator
              *
-             * @return Closure(Iterator<TKey, T>): Generator<int, bool>
+             * @return Iterator<int, bool>
              */
-            static function (Iterator $other): Closure {
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 *
-                 * @return Generator<int, bool>
-                 */
-                return static function (Iterator $iterator) use ($other): Generator {
-                    while ($other->valid() && $iterator->valid()) {
-                        $iterator->next();
-                        $other->next();
-                    }
+            static function (Iterator $iterator) use ($other): Iterator {
+                while ($other->valid() && $iterator->valid()) {
+                    $iterator->next();
+                    $other->next();
+                }
 
-                    if ($other->valid() !== $iterator->valid()) {
-                        return yield false;
-                    }
+                if ($other->valid() !== $iterator->valid()) {
+                    return yield false;
+                }
 
-                    $containsCallback =
-                        /**
-                         * @param T $current
-                         */
-                        static fn ($current): bool => Contains::of()($current)($other)->current();
+                $containsCallback =
+                    /**
+                     * @param T $current
+                     */
+                    static fn ($current): bool => (new Contains())($current)($other)->current();
 
-                    return yield from Every::of()(static fn (): bool => false)($containsCallback)($iterator);
-                };
+                return yield from (new Every())(static fn (): bool => false)($containsCallback)($iterator);
             };
     }
 }

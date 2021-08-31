@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 use loophp\collection\Iterator\IterableIterator;
 
 /**
@@ -20,40 +20,35 @@ use loophp\collection\Iterator\IterableIterator;
  * @template TKey
  * @template T
  */
-final class Flatten extends AbstractOperation
+final class Flatten implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(int): Closure(Iterator<TKey, T>): Generator<mixed, mixed>
+     * @return Closure(Iterator<TKey, T>): Iterator<mixed, mixed>
      */
-    public function __invoke(): Closure
+    public function __invoke(int $depth): Closure
     {
         return
             /**
-             * @return Closure(Iterator<TKey, T>): Generator<mixed, mixed>
+             * @param Iterator<TKey, T> $iterator
              */
-            static fn (int $depth): Closure =>
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 */
-                static function (Iterator $iterator) use ($depth): Generator {
-                    foreach ($iterator as $key => $value) {
-                        if (false === is_iterable($value)) {
-                            yield $key => $value;
+            static function (Iterator $iterator) use ($depth): Iterator {
+                foreach ($iterator as $key => $value) {
+                    if (false === is_iterable($value)) {
+                        yield $key => $value;
 
-                            continue;
-                        }
-
-                        if (1 !== $depth) {
-                            /** @var callable(Iterator<TKey, T>): Generator<mixed, mixed> $flatten */
-                            $flatten = Flatten::of()($depth - 1);
-
-                            $value = $flatten(new IterableIterator($value));
-                        }
-
-                        yield from $value;
+                        continue;
                     }
-                };
+
+                    if (1 !== $depth) {
+                        $flatten = (new Flatten())($depth - 1);
+
+                        $value = $flatten(new IterableIterator($value));
+                    }
+
+                    yield from $value;
+                }
+            };
     }
 }

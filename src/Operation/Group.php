@@ -9,9 +9,8 @@ declare(strict_types=1);
 
 namespace loophp\collection\Operation;
 
-use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,45 +18,39 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Group extends AbstractOperation
+final class Group implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<int, list<T>>
+     * @param Iterator<TKey, T> $iterator
+     *
+     * @return Iterator<int, list<T>>
      */
-    public function __invoke(): Closure
+    public function __invoke(Iterator $iterator): Iterator
     {
-        return
-            /**
-             * @param Iterator<TKey, T> $iterator
-             *
-             * @return Generator<int, list<T>>
-             */
-            static function (Iterator $iterator): Generator {
-                $last = [];
+        $last = [];
 
-                foreach ($iterator as $current) {
-                    if ([] === $last) {
-                        $last = [$current];
+        foreach ($iterator as $current) {
+            if ([] === $last) {
+                $last = [$current];
 
-                        continue;
-                    }
+                continue;
+            }
 
-                    if (current($last) === $current) {
-                        $last[] = $current;
+            if (current($last) === $current) {
+                $last[] = $current;
 
-                        continue;
-                    }
+                continue;
+            }
 
-                    yield $last;
+            yield $last;
 
-                    $last = [$current];
-                }
+            $last = [$current];
+        }
 
-                if ([] !== $last) {
-                    yield $last;
-                }
-            };
+        if ([] !== $last) {
+            yield $last;
+        }
     }
 }

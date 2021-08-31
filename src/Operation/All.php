@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace loophp\collection\Operation;
 
-use Closure;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -18,21 +18,17 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class All extends AbstractOperation
+final class All implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): array<TKey, T>
+     * @param Iterator<TKey, T> $iterator
+     *
+     * @return array<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(Iterator $iterator): array
     {
-        return
-            /**
-             * @param Iterator<TKey, T> $iterator
-             *
-             * @return array<TKey, T>
-             */
-            static fn (Iterator $iterator): array => iterator_to_array($iterator);
+        return iterator_to_array($iterator);
     }
 }

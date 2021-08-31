@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 use function in_array;
 
@@ -21,36 +21,30 @@ use function in_array;
  * @template TKey
  * @template T
  */
-final class Diff extends AbstractOperation
+final class Diff implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(T...): Closure(Iterator<TKey, T>): Generator<TKey, T>
+     * @param T ...$values
+     *
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(...$values): Closure
     {
-        return
+        $filterCallbackFactory =
             /**
-             * @param T ...$values
-             *
-             * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
+             * @param list<T> $values
              */
-            static function (...$values): Closure {
-                $filterCallbackFactory =
-                    /**
-                     * @param list<T> $values
-                     */
-                    static fn (array $values): Closure =>
-                        /**
-                         * @param T $value
-                         */
-                        static fn ($value): bool => false === in_array($value, $values, true);
+            static fn (array $values): Closure =>
+                /**
+                 * @param T $value
+                 */
+                static fn ($value): bool => false === in_array($value, $values, true);
 
-                $filter = (new Filter())()($filterCallbackFactory($values));
+        $filter = (new Filter())($filterCallbackFactory($values));
 
-                // Point free style.
-                return $filter;
-            };
+        // Point free style.
+        return $filter;
     }
 }

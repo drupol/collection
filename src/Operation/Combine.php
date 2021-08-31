@@ -11,8 +11,8 @@ namespace loophp\collection\Operation;
 
 use ArrayIterator;
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 use MultipleIterator;
 
 /**
@@ -21,54 +21,45 @@ use MultipleIterator;
  * @template TKey
  * @template T
  */
-final class Combine extends AbstractOperation
+final class Combine implements Operation
 {
     /**
      * @pure
      *
      * @template U
      *
-     * @return Closure(U...): Closure(Iterator<TKey, T>): Generator<null|U, null|T>
+     * @param U ...$keys
+     *
+     * @return Closure(Iterator<TKey, T>): Iterator<null|U, null|T>
      */
-    public function __invoke(): Closure
+    public function __invoke(...$keys): Closure
     {
-        return
+        $buildMultipleIterator =
             /**
-             * @param U ...$keys
-             *
-             * @return Closure(Iterator<TKey, T>): Generator<null|U, null|T>
+             * @param Iterator<int, U> $keyIterator
              */
-            static function (...$keys): Closure {
-                $buildMultipleIterator =
+            static function (Iterator $keyIterator): Closure {
+                return
                     /**
-                     * @param Iterator<int, U> $keyIterator
+                     * @param Iterator<TKey, T> $iterator
+                     *
+                     * @return MultipleIterator
                      */
-                    static function (Iterator $keyIterator): Closure {
-                        return
-                            /**
-                             * @param Iterator<TKey, T> $iterator
-                             *
-                             * @return MultipleIterator
-                             */
-                            static function (Iterator $iterator) use ($keyIterator): MultipleIterator {
-                                $mit = new MultipleIterator(MultipleIterator::MIT_NEED_ANY);
+                    static function (Iterator $iterator) use ($keyIterator): MultipleIterator {
+                        $mit = new MultipleIterator(MultipleIterator::MIT_NEED_ANY);
 
-                                $mit->attachIterator($keyIterator);
-                                $mit->attachIterator($iterator);
+                        $mit->attachIterator($keyIterator);
+                        $mit->attachIterator($iterator);
 
-                                return $mit;
-                            };
+                        return $mit;
                     };
-
-                /** @var Closure(Iterator<TKey, T>): Generator<null|U, null|T> $pipe */
-                $pipe = Pipe::of()(
-                    $buildMultipleIterator(new ArrayIterator($keys)),
-                    Flatten::of()(1),
-                    Pair::of(),
-                );
-
-                // Point free style.
-                return $pipe;
             };
+
+        // Point free style.
+        return Pipe::ofTyped3(
+            $buildMultipleIterator(new ArrayIterator($keys)),
+            (new Flatten())(1),
+            (new Pair())(),
+        );
     }
 }

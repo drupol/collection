@@ -11,8 +11,8 @@ namespace loophp\collection\Operation;
 
 use ArrayIterator;
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 use loophp\collection\Iterator\IterableIterator;
 
 /**
@@ -21,83 +21,75 @@ use loophp\collection\Iterator\IterableIterator;
  * @template TKey
  * @template T
  */
-final class Product extends AbstractOperation
+final class Product implements Operation
 {
     /**
      * @pure
      *
      * @template UKey
      * @template U
+     *
+     * @param iterable<UKey, U> ...$iterables
+     *
+     * @return Closure(Iterator<TKey, T>): Iterator<int, list<T|U>>
      */
-    public function __invoke(): Closure
+    public function __invoke(iterable ...$iterables): Closure
     {
-        return
-            /**
-             * @param iterable<UKey, U> ...$iterables
-             *
-             * @return Closure(Iterator<TKey, T>): Generator<int, list<T|U>>
-             */
-            static function (iterable ...$iterables): Closure {
-                /** @var Closure(Iterator<TKey, T>): Generator<int, list<T|U>> $pipe */
-                $pipe = Pipe::of()(
-                    (
+        return Pipe::ofTyped3(
+            (
+                /**
+                 * @param list<Iterator<UKey, U>> $iterables
+                 */
+                static fn (array $iterables): Closure =>
+                /**
+                 * @param Iterator<TKey, T> $iterator
+                 */
+                static fn (Iterator $iterator): Iterator => (
+                    /**
+                     * @param Closure(Iterator<TKey, T>): (Closure(Iterator<UKey, U>): Iterator<list<T|U>>) $f
+                     */
+                    static fn (Closure $f): Closure => (new FoldLeft())(
                         /**
-                         * @param list<Iterator<UKey, U>> $iterables
+                         * @param Iterator<UKey, U> $a
+                         * @param Iterator<TKey, T> $x
                          */
-                        static fn (array $iterables): Closure =>
+                        static fn (Iterator $a, Iterator $x): Iterator => $f($x)($a)
+                    )
+                )(
+                    /**
+                     * @param (Iterator<TKey, T>|Iterator<UKey, U>) $xs
+                     */
+                    static fn (Iterator $xs): Closure =>
+                    /**
+                     * @param Iterator<int, list<T>> $as
+                     */
+                    static fn (Iterator $as): Iterator => (new FlatMap())(
                         /**
-                         * @param Iterator<TKey, T> $iterator
+                         * @param list<T> $a
                          */
-                        static fn (Iterator $iterator): Generator => (
+                        static fn (array $a): Iterator => (new FlatMap())(
                             /**
-                             * @param Closure(Iterator<TKey, T>): (Closure(Iterator<UKey, U>): Generator<list<T|U>>) $f
-                             */
-                            static fn (Closure $f): Closure => (new FoldLeft())()(
-                                /**
-                                 * @param Iterator<UKey, U> $a
-                                 * @param Iterator<TKey, T> $x
-                                 */
-                                static fn (Iterator $a, Iterator $x): Generator => $f($x)($a)
-                            )
-                        )(
-                            /**
-                             * @param (Iterator<TKey, T>|Iterator<UKey, U>) $xs
-                             */
-                            static fn (Iterator $xs): Closure =>
-                            /**
-                             * @param Iterator<int, list<T>> $as
-                             */
-                            static fn (Iterator $as): Generator => FlatMap::of()(
-                                /**
-                                 * @param list<T> $a
-                                 */
-                                static fn (array $a): Generator => FlatMap::of()(
-                                    /**
-                                     * @param T|U $x
-                                     *
-                                     * @return Generator<int, list<T|U>>
-                                     */
-                                    static fn ($x): Generator => yield [...$a, $x]
-                                )($xs)
-                            )($as)
-                        )(new ArrayIterator([[]]))(new ArrayIterator([$iterator, ...$iterables]))
-                    )(
-                        array_map(
-                            /**
-                             * @param iterable<UKey, U> $iterable
+                             * @param T|U $x
                              *
-                             * @return Iterator<UKey, U>
+                             * @return Iterator<int, list<T|U>>
                              */
-                            static fn (iterable $iterable): Iterator => new IterableIterator($iterable),
-                            $iterables
-                        )
-                    ),
-                    ((new Unwrap())()),
-                    ((new Normalize())())
-                );
-
-                // Point free style.
-                return $pipe;
-            };
+                            static fn ($x): Iterator => yield [...$a, $x]
+                        )($xs)
+                    )($as)
+                )(new ArrayIterator([[]]))(new ArrayIterator([$iterator, ...$iterables]))
+            )(
+                array_map(
+                    /**
+                     * @param iterable<UKey, U> $iterable
+                     *
+                     * @return Iterator<UKey, U>
+                     */
+                    static fn (iterable $iterable): Iterator => new IterableIterator($iterable),
+                    $iterables
+                )
+            ),
+            ((new Unwrap())()),
+            ((new Normalize()))
+        );
     }
 }

@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,17 +19,16 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Unwrap extends AbstractOperation
+final class Unwrap implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<mixed, mixed>
+     * @return Closure(Iterator<TKey, T>): Iterator<mixed, mixed>
      */
     public function __invoke(): Closure
     {
-        /** @var Closure(Iterator<TKey, T>): Generator<mixed, mixed> $flatten */
-        $flatten = Flatten::of()(1);
+        $flatten = (new Flatten())(1);
 
         // Point free style.
         return $flatten;

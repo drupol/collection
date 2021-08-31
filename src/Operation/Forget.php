@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 use function in_array;
 
@@ -21,37 +21,29 @@ use function in_array;
  * @template TKey
  * @template T
  */
-final class Forget extends AbstractOperation
+final class Forget implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(TKey...): Closure(Iterator<TKey, T>): Generator<TKey, T>
+     * @param TKey ...$keys
+     *
+     * @return Closure(TKey...): Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(...$keys): Closure
     {
-        return
+        $filterCallbackFactory =
             /**
-             * @param TKey ...$keys
-             *
-             * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
+             * @param list<TKey> $keys
              */
-            static function (...$keys): Closure {
-                $filterCallbackFactory =
-                    /**
-                     * @param list<TKey> $keys
-                     */
-                    static fn (array $keys): Closure =>
-                        /**
-                         * @param T $value
-                         * @param TKey $key
-                         */
-                        static fn ($value, $key): bool => false === in_array($key, $keys, true);
+            static fn (array $keys): Closure =>
+                /**
+                 * @param T $value
+                 * @param TKey $key
+                 */
+                static fn ($value, $key): bool => false === in_array($key, $keys, true);
 
-                $filter = (new Filter())()($filterCallbackFactory($keys));
-
-                // Point free style.
-                return $filter;
-            };
+        // Point free style.
+        return (new Filter())($filterCallbackFactory($keys));
     }
 }

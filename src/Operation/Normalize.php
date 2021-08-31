@@ -9,9 +9,8 @@ declare(strict_types=1);
 
 namespace loophp\collection\Operation;
 
-use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,25 +18,19 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Normalize extends AbstractOperation
+final class Normalize implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<int, T>
+     * @param Iterator<TKey, T> $iterator
+     *
+     * @return Iterator<int, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(Iterator $iterator): Iterator
     {
-        return
-            /**
-             * @param Iterator<TKey, T> $iterator
-             *
-             * @return Generator<int, T>
-             */
-            static function (Iterator $iterator): Generator {
-                foreach ($iterator as $value) {
-                    yield $value;
-                }
-            };
+        foreach ($iterator as $value) {
+            yield $value;
+        }
     }
 }

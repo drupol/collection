@@ -11,6 +11,7 @@ namespace loophp\collection\Operation;
 
 use Closure;
 use Iterator;
+use loophp\collection\Contract\Operation;
 use loophp\collection\Iterator\RandomIterator;
 
 /**
@@ -19,25 +20,21 @@ use loophp\collection\Iterator\RandomIterator;
  * @template TKey
  * @template T
  */
-final class Shuffle extends AbstractOperation
+final class Shuffle implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(int): Closure(Iterator<TKey, T>): Iterator<TKey, T>
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(int $seed): Closure
     {
         return
             /**
-             * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
+             * @param Iterator<TKey, T> $iterator
+             *
+             * @return Iterator<TKey, T>
              */
-            static fn (int $seed): Closure =>
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 *
-                 * @return Iterator<TKey, T>
-                 */
-                static fn (Iterator $iterator): Iterator => new RandomIterator($iterator, $seed);
+            static fn (Iterator $iterator): Iterator => new RandomIterator($iterator, $seed);
     }
 }

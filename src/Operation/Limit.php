@@ -12,6 +12,7 @@ namespace loophp\collection\Operation;
 use Closure;
 use Iterator;
 use LimitIterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -21,29 +22,25 @@ use LimitIterator;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class Limit extends AbstractOperation
+final class Limit implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(int): Closure(int): Closure(Iterator<TKey, T>): Iterator<TKey, T>
+     * @return Closure(int): Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(int $count = -1): Closure
     {
         return
             /**
-             * @return Closure(int): Closure(Iterator<TKey, T>): Iterator<TKey, T>
+             * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
              */
-            static fn (int $count = -1): Closure =>
+            static fn (int $offset = 0): Closure =>
                 /**
-                 * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
+                 * @param Iterator<TKey, T> $iterator
+                 *
+                 * @return Iterator<TKey, T>
                  */
-                static fn (int $offset = 0): Closure =>
-                    /**
-                     * @param Iterator<TKey, T> $iterator
-                     *
-                     * @return Iterator<TKey, T>
-                     */
-                    static fn (Iterator $iterator): Iterator => new LimitIterator($iterator, $offset, $count);
+                static fn (Iterator $iterator): Iterator => new LimitIterator($iterator, $offset, $count);
     }
 }

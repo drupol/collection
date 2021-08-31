@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,44 +19,36 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Column extends AbstractOperation
+final class Column implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(mixed): Closure(Iterator<TKey, T>): Generator<int, mixed>
+     * @param mixed $column
+     *
+     * @return Closure(Iterator<TKey, T>): Iterator<int, mixed>
      */
-    public function __invoke(): Closure
+    public function __invoke($column): Closure
     {
-        return
+        $filterCallbackBuilder =
             /**
              * @param mixed $column
-             *
-             * @return Closure(Iterator<TKey, T>): Generator<int, mixed>
              */
-            static function ($column): Closure {
-                $filterCallbackBuilder =
-                    /**
-                     * @param mixed $column
-                     */
-                    static fn ($column): Closure =>
-                        /**
-                         * @param T $value
-                         * @param TKey $key
-                         * @param Iterator<TKey, T> $iterator
-                         */
-                        static fn ($value, $key, Iterator $iterator): bool => $key === $column;
+            static fn ($column): Closure =>
+                /**
+                 * @param T $value
+                 * @param TKey $key
+                 */
+                static fn ($value, $key): bool => $key === $column;
 
-                /** @var Closure(Iterator<TKey, T>): Generator<int, mixed> $pipe */
-                $pipe = Pipe::of()(
-                    Transpose::of(),
-                    (new Filter())()($filterCallbackBuilder($column)),
-                    Head::of(),
-                    Flatten::of()(1)
-                );
+        $pipe = Pipe::ofTyped4(
+            (new Transpose())(),
+            (new Filter())($filterCallbackBuilder($column)),
+            (new Head()),
+            (new Flatten())(1)
+        );
 
-                // Point free style.
-                return $pipe;
-            };
+        // Point free style.
+        return $pipe;
     }
 }

@@ -11,6 +11,7 @@ namespace loophp\collection\Operation;
 
 use Closure;
 use Iterator;
+use loophp\collection\Contract\Operation;
 use loophp\collection\Iterator\PsrCacheIterator;
 use Psr\Cache\CacheItemPoolInterface;
 
@@ -22,25 +23,21 @@ use Psr\Cache\CacheItemPoolInterface;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class Cache extends AbstractOperation
+final class Cache implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(CacheItemPoolInterface): Closure(Iterator<TKey, T>): Iterator<TKey, T>
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(CacheItemPoolInterface $cache): Closure
     {
         return
             /**
-             * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
+             * @param Iterator<TKey, T> $iterator
+             *
+             * @return Iterator<TKey, T>
              */
-            static fn (CacheItemPoolInterface $cache): Closure =>
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 *
-                 * @return Iterator<TKey, T>
-                 */
-                static fn (Iterator $iterator): Iterator => new PsrCacheIterator($iterator, $cache);
+            static fn (Iterator $iterator): Iterator => new PsrCacheIterator($iterator, $cache);
     }
 }

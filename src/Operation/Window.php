@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 use function array_slice;
 
@@ -21,33 +21,24 @@ use function array_slice;
  * @template TKey
  * @template T
  */
-final class Window extends AbstractOperation
+final class Window implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(int): Closure(Iterator<TKey, T>): Generator<TKey, list<T>>
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, list<T>>
      */
-    public function __invoke(): Closure
+    public function __invoke(int $size): Closure
     {
-        return
+        // Point free style.
+        return (new Reduction())(
             /**
-             * @return Closure(Iterator<TKey, T>): Generator<TKey, list<T>>
+             * @param list<T> $stack
+             * @param T $current
+             *
+             * @return list<T>
              */
-            static function (int $size): Closure {
-                /** @var Closure(Iterator<TKey, T>): Generator<TKey, list<T>> $reduction */
-                $reduction = Reduction::of()(
-                    /**
-                     * @param list<T> $stack
-                     * @param T $current
-                     *
-                     * @return list<T>
-                     */
-                    static fn (array $stack, $current): array => array_slice([...$stack, $current], ++$size * -1)
-                )([]);
-
-                // Point free style.
-                return $reduction;
-            };
+            static fn (array $stack, $current): array => array_slice([...$stack, $current], ++$size * -1)
+        )([]);
     }
 }

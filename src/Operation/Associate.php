@@ -11,8 +11,8 @@ namespace loophp\collection\Operation;
 
 use ArrayIterator;
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -22,67 +22,63 @@ use Iterator;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class Associate extends AbstractOperation
+final class Associate implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(callable(TKey, TKey, T, Iterator<TKey, T>): (T|TKey) ...): Closure((callable(T, TKey, T, Iterator<TKey, T>): (T|TKey))...): Closure(Iterator<TKey, T>): Generator<TKey|T, T|TKey>
+     * @param callable(TKey, TKey, T, Iterator<TKey, T>): (T|TKey) ...$callbackForKeys
+     *
+     * @return Closure((callable(T, TKey, T, Iterator<TKey, T>): (T|TKey))...): Closure(Iterator<TKey, T>): Iterator<TKey|T, T|TKey>
      */
-    public function __invoke(): Closure
+    public function __invoke(callable ...$callbackForKeys): Closure
     {
         return
             /**
-             * @param callable(TKey, TKey, T, Iterator<TKey, T>): (T|TKey) ...$callbackForKeys
+             * @param callable(T, TKey, T, Iterator<TKey, T>): (T|TKey) ...$callbackForValues
              *
-             * @return Closure((callable(T, TKey, T, Iterator<TKey, T>): (T|TKey))...): Closure(Iterator<TKey, T>): Generator<TKey|T, T|TKey>
+             * @return Closure(Iterator<TKey, T>): Iterator<TKey|T, T|TKey>
              */
-            static fn (callable ...$callbackForKeys): Closure =>
+            static fn (callable ...$callbackForValues): Closure =>
                 /**
-                 * @param callable(T, TKey, T, Iterator<TKey, T>): (T|TKey) ...$callbackForValues
+                 * @param Iterator<TKey, T> $iterator
                  *
-                 * @return Closure(Iterator<TKey, T>): Generator<TKey|T, T|TKey>
+                 * @return Iterator<T|TKey, T|TKey>
                  */
-                static fn (callable ...$callbackForValues): Closure =>
-                    /**
-                     * @param Iterator<TKey, T> $iterator
-                     *
-                     * @return Generator<T|TKey, T|TKey>
-                     */
-                    static function (Iterator $iterator) use ($callbackForKeys, $callbackForValues): Generator {
-                        $callbackFactory =
+                static function (Iterator $iterator) use ($callbackForKeys, $callbackForValues): Iterator {
+                    $callbackFactory =
+                        /**
+                         * @param TKey $key
+                         *
+                         * @return Closure(T): Closure(T|TKey, callable(T|TKey, TKey, T, Iterator<TKey, T>): (T|TKey), int, Iterator<TKey, T>): (T|TKey)
+                         */
+                        static fn ($key): Closure =>
                             /**
-                             * @param TKey $key
+                             * @param T $value
                              *
-                             * @return Closure(T): Closure(T|TKey, callable(T|TKey, TKey, T, Iterator<TKey, T>): (T|TKey), int, Iterator<TKey, T>): (T|TKey)
+                             * @return Closure(T|TKey, callable(T|TKey, TKey, T, Iterator<TKey, T>): (T|TKey), int, Iterator<TKey, T>): (T|TKey)
                              */
-                            static fn ($key): Closure =>
+                            static fn ($value): Closure =>
                                 /**
-                                 * @param T $value
+                                 * @param T|TKey $accumulator
+                                 * @param callable(T|TKey, TKey, T, Iterator<TKey, T>): (T|TKey) $callback
+                                 * @param Iterator<TKey, T> $iterator
                                  *
-                                 * @return Closure(T|TKey, callable(T|TKey, TKey, T, Iterator<TKey, T>): (T|TKey), int, Iterator<TKey, T>): (T|TKey)
+                                 * @return T|TKey
                                  */
-                                static fn ($value): Closure =>
-                                    /**
-                                     * @param T|TKey $accumulator
-                                     * @param callable(T|TKey, TKey, T, Iterator<TKey, T>): (T|TKey) $callback
-                                     * @param Iterator<TKey, T> $iterator
-                                     *
-                                     * @return T|TKey
-                                     */
-                                    static fn ($accumulator, callable $callback, int $callbackId, Iterator $iterator) => $callback($accumulator, $key, $value, $iterator);
+                                static fn ($accumulator, callable $callback, int $callbackId, Iterator $iterator) => $callback($accumulator, $key, $value, $iterator);
 
-                        foreach ($iterator as $key => $value) {
-                            $reduceCallback = $callbackFactory($key)($value);
+                    foreach ($iterator as $key => $value) {
+                        $reduceCallback = $callbackFactory($key)($value);
 
-                            /** @var Generator<int, T|TKey> $k */
-                            $k = Reduce::of()($reduceCallback)($key)(new ArrayIterator($callbackForKeys));
+                        /** @var Iterator<int, T|TKey> $k */
+                        $k = (new Reduce())($reduceCallback)($key)(new ArrayIterator($callbackForKeys));
 
-                            /** @var Generator<int, T|TKey> $c */
-                            $c = Reduce::of()($reduceCallback)($value)(new ArrayIterator($callbackForValues));
+                        /** @var Iterator<int, T|TKey> $c */
+                        $c = (new Reduce())($reduceCallback)($value)(new ArrayIterator($callbackForValues));
 
-                            yield $k->current() => $c->current();
-                        }
-                    };
+                        yield $k->current() => $c->current();
+                    }
+                };
     }
 }

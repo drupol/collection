@@ -12,8 +12,8 @@ namespace loophp\collection\Operation;
 use Amp\Sync\LocalSemaphore;
 use Closure;
 use Exception;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 use function Amp\Iterator\fromIterable;
 use function Amp\ParallelFunctions\parallel;
@@ -34,57 +34,55 @@ if (false === function_exists('Amp\ParallelFunctions\parallel')) {
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class AsyncMapN extends AbstractOperation
+final class AsyncMapN implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(callable(mixed, mixed): mixed ...): Closure(Iterator<TKey, T>): Generator<mixed, mixed>
+     * @param callable(mixed, mixed): mixed ...$callbacks
+     *
+     * @return Closure(Iterator<TKey, T>): Iterator<mixed, mixed>
      */
-    public function __invoke(): Closure
+    public function __invoke(callable ...$callbacks): Closure
     {
         return
             /**
-             * @param callable(mixed, mixed): mixed ...$callbacks
+             * @param Iterator<TKey, T> $iterator
+             *
+             * @return Iterator<mixed, mixed>
              */
-            static fn (callable ...$callbacks): Closure =>
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 *
-                 * @return Generator<mixed, mixed>
-                 */
-                static function (Iterator $iterator) use ($callbacks): Generator {
-                    $callbackFactory =
+            static function (Iterator $iterator) use ($callbacks): Iterator {
+                $callbackFactory =
+                    /**
+                     * @param mixed $key
+                     *
+                     * @return Closure(mixed, callable(mixed, mixed): mixed): mixed
+                     */
+                    static fn ($key): Closure =>
                         /**
-                         * @param mixed $key
+                         * @param mixed $carry
+                         * @param callable(mixed, mixed): mixed $callback
                          *
-                         * @return Closure(mixed, callable(mixed, mixed): mixed): mixed
+                         * @return mixed
                          */
-                        static fn ($key): Closure =>
-                            /**
-                             * @param mixed $carry
-                             * @param callable(mixed, mixed): mixed $callback
-                             *
-                             * @return mixed
-                             */
-                            static fn ($carry, callable $callback) => $callback($carry, $key);
+                        static fn ($carry, callable $callback) => $callback($carry, $key);
 
-                    $callback =
-                        /**
-                         * @param array{0: mixed, 1: mixed} $value
-                         *
-                         * @return array{0: mixed, 1: mixed}
-                         */
-                        static fn (array $value): array => [$value[0], array_reduce($callbacks, $callbackFactory($value[0]), $value[1])];
+                $callback =
+                    /**
+                     * @param array{0: mixed, 1: mixed} $value
+                     *
+                     * @return array{0: mixed, 1: mixed}
+                     */
+                    static fn (array $value): array => [$value[0], array_reduce($callbacks, $callbackFactory($value[0]), $value[1])];
 
-                    $iter = map(fromIterable(Pack::of()($iterator)), new LocalSemaphore(32), parallel($callback));
+                $iter = map(fromIterable((new Pack())()($iterator)), new LocalSemaphore(32), parallel($callback));
 
-                    while (wait($iter->advance())) {
-                        /** @var array{0: mixed, 1: mixed} $item */
-                        $item = $iter->getCurrent();
+                while (wait($iter->advance())) {
+                    /** @var array{0: mixed, 1: mixed} $item */
+                    $item = $iter->getCurrent();
 
-                        yield $item[0] => $item[1];
-                    }
-                };
+                    yield $item[0] => $item[1];
+                }
+            };
     }
 }

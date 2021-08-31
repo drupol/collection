@@ -10,9 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use ArrayIterator;
-use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -20,36 +19,28 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Tails extends AbstractOperation
+final class Tails implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<int, list<T>, mixed, void>
+     * @param Iterator<TKey, T> $iterator
+     *
+     * @return Iterator<int, list<T>>
      */
-    public function __invoke(): Closure
+    public function __invoke(Iterator $iterator): Iterator
     {
-        return
-            /**
-             * @param Iterator<TKey, T> $iterator
-             *
-             * @return Generator<int, list<T>, mixed, void>
-             */
-            static function (Iterator $iterator): Generator {
-                /** @var Iterator<int, array{0: TKey, 1: T}> $iterator */
-                $iterator = Pack::of()($iterator);
-                $data = [...$iterator];
+        $iterator = (new Pack())()($iterator);
+        $data = [...$iterator];
 
-                while ([] !== $data) {
-                    /** @var Iterator<TKey, T> $unpack */
-                    $unpack = Unpack::of()(new ArrayIterator($data));
+        while ([] !== $data) {
+            $unpack = (new Unpack())()(new ArrayIterator($data));
 
-                    yield [...$unpack];
+            yield [...$unpack];
 
-                    array_shift($data);
-                }
+            array_shift($data);
+        }
 
-                return yield [];
-            };
+        return yield [];
     }
 }

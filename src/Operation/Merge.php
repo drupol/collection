@@ -11,6 +11,7 @@ namespace loophp\collection\Operation;
 
 use Closure;
 use Iterator;
+use loophp\collection\Contract\Operation;
 use loophp\collection\Iterator\MultipleIterableIterator;
 
 /**
@@ -19,25 +20,23 @@ use loophp\collection\Iterator\MultipleIterableIterator;
  * @template TKey
  * @template T
  */
-final class Merge extends AbstractOperation
+final class Merge implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(iterable<TKey, T>...): Closure(Iterator<TKey, T>): Iterator<TKey, T>
+     * @param iterable<TKey, T> ...$sources
+     *
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(iterable ...$sources): Closure
     {
         return
             /**
-             * @param iterable<TKey, T> ...$sources
+             * @param Iterator<TKey, T> $iterator
+             *
+             * @return Iterator<TKey, T>
              */
-            static fn (iterable ...$sources): Closure =>
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 *
-                 * @return Iterator<TKey, T>
-                 */
-                static fn (Iterator $iterator): Iterator => new MultipleIterableIterator($iterator, ...$sources);
+            static fn (Iterator $iterator): Iterator => new MultipleIterableIterator($iterator, ...$sources);
     }
 }

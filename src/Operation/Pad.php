@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,43 +19,39 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Pad extends AbstractOperation
+final class Pad implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(int): Closure(T): Closure(Iterator<TKey, T>): Generator<int|TKey, T>
+     * @return Closure(T): Closure(Iterator<TKey, T>): Iterator<int|TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(int $size): Closure
     {
         return
             /**
-             * @return Closure(T): Closure(Iterator<TKey, T>): Generator<int|TKey, T>
+             * @param T $padValue
+             *
+             * @return Closure(Iterator<TKey, T>): Iterator<int|TKey, T>
              */
-            static fn (int $size): Closure =>
+            static fn ($padValue): Closure =>
                 /**
-                 * @param T $padValue
+                 * @param Iterator<TKey, T> $iterator
                  *
-                 * @return Closure(Iterator<TKey, T>): Generator<int|TKey, T>
+                 * @return Iterator<int|TKey, T>
                  */
-                static fn ($padValue): Closure =>
-                    /**
-                     * @param Iterator<TKey, T> $iterator
-                     *
-                     * @return Generator<int|TKey, T>
-                     */
-                    static function (Iterator $iterator) use ($size, $padValue): Generator {
-                        $y = 0;
+                static function (Iterator $iterator) use ($size, $padValue): Iterator {
+                    $y = 0;
 
-                        foreach ($iterator as $key => $value) {
-                            ++$y;
+                    foreach ($iterator as $key => $value) {
+                        ++$y;
 
-                            yield $key => $value;
-                        }
+                        yield $key => $value;
+                    }
 
-                        while ($y++ < $size) {
-                            yield $padValue;
-                        }
-                    };
+                    while ($y++ < $size) {
+                        yield $padValue;
+                    }
+                };
     }
 }

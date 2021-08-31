@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 use loophp\collection\Utils\CallbacksArrayReducer;
 
 /**
@@ -22,28 +22,24 @@ use loophp\collection\Utils\CallbacksArrayReducer;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class TakeWhile extends AbstractOperation
+final class TakeWhile implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(callable(T=, TKey=, Iterator<TKey, T>=): bool ...): Closure(Iterator<TKey, T>): Generator<TKey, T>
+     * @param callable(T=, TKey=, Iterator<TKey, T>=): bool ...$callbacks
+     *
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(callable ...$callbacks): Closure
     {
         return
             /**
-             * @param callable(T=, TKey=, Iterator<TKey, T>=): bool ...$callbacks
-             *
-             * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
-             */
-            static fn (callable ...$callbacks): Closure =>
-            /**
              * @param Iterator<TKey, T> $iterator
              *
-             * @return Generator<TKey, T>
+             * @return Iterator<TKey, T>
              */
-            static function (Iterator $iterator) use ($callbacks): Generator {
+            static function (Iterator $iterator) use ($callbacks): Iterator {
                 foreach ($iterator as $key => $current) {
                     if (!CallbacksArrayReducer::or()($callbacks, $current, $key, $iterator)) {
                         break;

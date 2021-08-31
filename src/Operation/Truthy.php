@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,12 +19,12 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Truthy extends AbstractOperation
+final class Truthy implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<int, bool>
+     * @return Closure(Iterator<TKey, T>): Iterator<int, bool>
      */
     public function __invoke(): Closure
     {
@@ -35,13 +35,9 @@ final class Truthy extends AbstractOperation
              */
             static fn ($value): bool => !(bool) $value;
 
-        /** @var Closure(Iterator<TKey, T>): Generator<int, bool> $pipe */
-        $pipe = Pipe::of()(
-            MatchOne::of()($matchWhenNot)($matcher),
-            Map::of()($matcher),
+        return Pipe::ofTyped2(
+            (new MatchOne())($matchWhenNot)($matcher),
+            (new Map())($matcher),
         );
-
-        // Point free style.
-        return $pipe;
     }
 }

@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace loophp\collection\Operation;
 
-use Closure;
 use InfiniteIterator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,21 +19,17 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Cycle extends AbstractOperation
+final class Cycle implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
+     * @param Iterator<TKey, T> $iterator
+     *
+     * @return InfiniteIterator<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(Iterator $iterator): InfiniteIterator
     {
-        return
-            /**
-             * @param Iterator<TKey, T> $iterator
-             *
-             * @return Iterator<TKey, T>
-             */
-            static fn (Iterator $iterator): Iterator => new InfiniteIterator($iterator);
+        return new InfiniteIterator($iterator);
     }
 }

@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -21,39 +21,35 @@ use Iterator;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class Apply extends AbstractOperation
+final class Apply implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(callable(T=, TKey=, Iterator<TKey, T>=):bool ...): Closure(Iterator<TKey, T>): Generator<TKey, T>
+     * @param callable(T=, TKey=, Iterator<TKey, T>=): bool ...$callbacks
+     *
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
-    public function __invoke(): Closure
+    public function __invoke(callable ...$callbacks): Closure
     {
         return
             /**
-             * @param callable(T=, TKey=, Iterator<TKey, T>=): bool ...$callbacks
+             * @param Iterator<TKey, T> $iterator
              *
-             * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
+             * @return Iterator<TKey, T>
              */
-            static fn (callable ...$callbacks): Closure =>
-                /**
-                 * @param Iterator<TKey, T> $iterator
-                 *
-                 * @return Generator<TKey, T>
-                 */
-                static function (Iterator $iterator) use ($callbacks): Generator {
-                    foreach ($iterator as $key => $value) {
-                        foreach ($callbacks as $cKey => $callback) {
-                            $result = $callback($value, $key, $iterator);
+            static function (Iterator $iterator) use ($callbacks): Iterator {
+                foreach ($iterator as $key => $value) {
+                    foreach ($callbacks as $cKey => $callback) {
+                        $result = $callback($value, $key, $iterator);
 
-                            if (false === $result) {
-                                unset($callbacks[$cKey]);
-                            }
+                        if (false === $result) {
+                            unset($callbacks[$cKey]);
                         }
-
-                        yield $key => $value;
                     }
-                };
+
+                    yield $key => $value;
+                }
+            };
     }
 }

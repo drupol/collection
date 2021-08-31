@@ -24,10 +24,12 @@ interface FoldLeftable
      *
      * @see https://loophp-collection.readthedocs.io/en/stable/pages/api.html#foldleft
      *
-     * @param callable(T, T, TKey, Iterator<TKey, T>): T $callback
-     * @param T|null $initial
+     * @template V
      *
-     * @return Collection<TKey, T|null>
+     * @param callable((T|V)=, T=, TKey=, Iterator<TKey, T>=): V $callback
+     * @param V $initial
+     *
+     * @return Collection<int|TKey, T|V>
      */
     public function foldLeft(callable $callback, $initial = null): Collection;
 }

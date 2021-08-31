@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 use loophp\collection\Utils\CallbacksArrayReducer;
 
 /**
@@ -22,74 +22,64 @@ use loophp\collection\Utils\CallbacksArrayReducer;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class MatchOne extends AbstractOperation
+final class MatchOne implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(callable(T=, TKey=, Iterator<TKey, T>=): bool ...): Closure(callable(T=, TKey=, Iterator<TKey, T>=): bool ...): Closure(Iterator<TKey, T>): Generator<TKey, bool>
+     * @param callable(T=, TKey=, Iterator<TKey, T>=): bool ...$matchers
+     *
+     * @return Closure(callable(T=, TKey=, Iterator<TKey, T>=): bool ...): Closure(Iterator<TKey, T>): Iterator<TKey, bool>
      */
-    public function __invoke(): Closure
+    public function __invoke(callable ...$matchers): Closure
     {
         return
             /**
-             * @param callable(T=, TKey=, Iterator<TKey, T>=): bool ...$matchers
+             * @param callable(T=, TKey=, Iterator<TKey, T>=): bool ...$callbacks
              *
-             * @return Closure(callable(T=, TKey=, Iterator<TKey, T>=): bool ...): Closure(Iterator<TKey, T>): Generator<TKey, bool>
+             * @return Closure(Iterator<TKey, T>): Iterator<TKey, bool>
              */
-            static function (callable ...$matchers): Closure {
-                return
+            static function (callable ...$callbacks) use ($matchers): Closure {
+                $callbackReducer =
                     /**
-                     * @param callable(T=, TKey=, Iterator<TKey, T>=): bool ...$callbacks
+                     * @param list<callable(T=, TKey=, Iterator<TKey, T>=): bool> $callbacks
                      *
-                     * @return Closure(Iterator<TKey, T>): Generator<TKey, bool>
+                     * @return Closure(T, TKey, Iterator<TKey, T>): bool
                      */
-                    static function (callable ...$callbacks) use ($matchers): Closure {
-                        $callbackReducer =
+                    static fn (array $callbacks): Closure =>
+                        /**
+                         * @param T $current
+                         * @param TKey $key
+                         * @param Iterator<TKey, T> $iterator
+                         */
+                        static fn ($current, $key, Iterator $iterator): bool => CallbacksArrayReducer::or()($callbacks, $current, $key, $iterator);
+
+                $mapCallback =
+                    /**
+                     * @param callable(T=, TKey=, Iterator<TKey, T>=): mixed $reducer1
+                     *
+                     * @return Closure(callable(T=, TKey=, Iterator<TKey, T>=): mixed): Closure(T, TKey, Iterator<TKey, T>): bool
+                     */
+                    static fn (callable $reducer1): Closure =>
+                        /**
+                         * @param callable(T=, TKey=, Iterator<TKey, T>=): mixed $reducer2
+                         *
+                         * @return Closure(T, TKey, Iterator<TKey, T>): bool
+                         */
+                        static fn (callable $reducer2): Closure =>
                             /**
-                             * @param list<callable(T=, TKey=, Iterator<TKey, T>=): bool> $callbacks
-                             *
-                             * @return Closure(T, TKey, Iterator<TKey, T>): bool
+                             * @param T $value
+                             * @param TKey $key
+                             * @param Iterator<TKey, T> $iterator
                              */
-                            static fn (array $callbacks): Closure =>
-                                /**
-                                 * @param T $current
-                                 * @param TKey $key
-                                 * @param Iterator<TKey, T> $iterator
-                                 */
-                                static fn ($current, $key, Iterator $iterator): bool => CallbacksArrayReducer::or()($callbacks, $current, $key, $iterator);
+                            static fn ($value, $key, Iterator $iterator): bool => $reducer1($value, $key, $iterator) === $reducer2($value, $key, $iterator);
 
-                        $mapCallback =
-                            /**
-                             * @param callable(T=, TKey=, Iterator<TKey, T>=): mixed $reducer1
-                             *
-                             * @return Closure(callable(T=, TKey=, Iterator<TKey, T>=): mixed): Closure(T, TKey, Iterator<TKey, T>): bool
-                             */
-                            static fn (callable $reducer1): Closure =>
-                                /**
-                                 * @param callable(T=, TKey=, Iterator<TKey, T>=): mixed $reducer2
-                                 *
-                                 * @return Closure(T, TKey, Iterator<TKey, T>): bool
-                                 */
-                                static fn (callable $reducer2): Closure =>
-                                    /**
-                                     * @param T $value
-                                     * @param TKey $key
-                                     * @param Iterator<TKey, T> $iterator
-                                     */
-                                    static fn ($value, $key, Iterator $iterator): bool => $reducer1($value, $key, $iterator) === $reducer2($value, $key, $iterator);
-
-                        /** @var Closure(Iterator<TKey, T>): Generator<TKey, bool> $pipe */
-                        $pipe = Pipe::of()(
-                            Map::of()($mapCallback($callbackReducer($callbacks))($callbackReducer($matchers))),
-                            DropWhile::of()(static fn (bool $value): bool => false === $value),
-                            Append::of()(false),
-                            Head::of()
-                        );
-
-                        // Point free style.
-                        return $pipe;
-                    };
+                return Pipe::ofTyped4(
+                    (new Map())($mapCallback($callbackReducer($callbacks))($callbackReducer($matchers))),
+                    (new DropWhile())(static fn (bool $value): bool => false === $value),
+                    (new Append())(false),
+                    (new Head())
+                );
             };
     }
 }

@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -21,7 +21,7 @@ use Iterator;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class ScanRight extends AbstractOperation
+final class ScanRight implements Operation
 {
     /**
      * @pure
@@ -29,33 +29,26 @@ final class ScanRight extends AbstractOperation
      * @template V
      * @template W
      *
-     * @return Closure(callable((V|W)=, T=, TKey=, Iterator<TKey, T>=): W): Closure(V): Closure(Iterator<TKey, T>): Generator<int|TKey, V|W>
+     * @param callable((V|W)=, T=, TKey=, Iterator<TKey, T>=): W $callback
+     *
+     * @return Closure(V): Closure(Iterator<TKey, T>): Iterator<int|TKey, V|W>
      */
-    public function __invoke(): Closure
+    public function __invoke(callable $callback): Closure
     {
         return
             /**
-             * @param callable((V|W)=, T=, TKey=, Iterator<TKey, T>=): W $callback
+             * @param V $initial
              *
-             * @return Closure(V): Closure(Iterator<TKey, T>): Generator<int|TKey, V|W>
+             * @return Closure(Iterator<TKey, T>): Iterator<int|TKey, V|W>
              */
-            static fn (callable $callback): Closure =>
-                /**
-                 * @param V $initial
-                 *
-                 * @return Closure(Iterator<TKey, T>): Generator<int|TKey, V|W>
-                 */
-                static function ($initial) use ($callback): Closure {
-                    /** @var Closure(Iterator<TKey, T>):(Generator<int|TKey, V|W>) $pipe */
-                    $pipe = Pipe::of()(
-                        Reverse::of(),
-                        Reduction::of()($callback)($initial),
-                        Reverse::of(),
-                        Append::of()($initial)
-                    );
-
-                    // Point free style.
-                    return $pipe;
-                };
+            static function ($initial) use ($callback): Closure {
+                // Point free style.
+                return Pipe::ofTyped4(
+                    (new Reverse())(),
+                    (new Reduction())($callback)($initial),
+                    (new Reverse())(),
+                    (new Append())($initial)
+                );
+            };
     }
 }

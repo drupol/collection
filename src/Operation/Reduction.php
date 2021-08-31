@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -21,7 +21,7 @@ use Iterator;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class Reduction extends AbstractOperation
+final class Reduction implements Operation
 {
     /**
      * @pure
@@ -29,32 +29,28 @@ final class Reduction extends AbstractOperation
      * @template V
      * @template W
      *
-     * @return Closure(callable((V|W)=, T=, TKey=, Iterator<TKey, T>=): W): Closure(V): Closure(Iterator<TKey, T>): Generator<TKey, W>
+     * @param callable((V|W)=, T=, TKey=, Iterator<TKey, T>=): W $callback
+     *
+     * @return Closure(V): Closure(Iterator<TKey, T>): Iterator<TKey, W>
      */
-    public function __invoke(): Closure
+    public function __invoke(callable $callback): Closure
     {
         return
             /**
-             * @param callable((V|W)=, T=, TKey=, Iterator<TKey, T>=): W $callback
+             * @param V $initial
              *
-             * @return Closure(V): Closure(Iterator<TKey, T>): Generator<TKey, W>
+             * @return Closure(Iterator<TKey, T>): Iterator<TKey, W>
              */
-            static fn (callable $callback): Closure =>
+            static fn ($initial): Closure =>
                 /**
-                 * @param V $initial
+                 * @param Iterator<TKey, T> $iterator
                  *
-                 * @return Closure(Iterator<TKey, T>): Generator<TKey, W>
+                 * @return Iterator<TKey, W>
                  */
-                static fn ($initial): Closure =>
-                    /**
-                     * @param Iterator<TKey, T> $iterator
-                     *
-                     * @return Generator<TKey, W>
-                     */
-                    static function (Iterator $iterator) use ($callback, $initial): Generator {
-                        foreach ($iterator as $key => $value) {
-                            yield $key => ($initial = $callback($initial, $value, $key, $iterator));
-                        }
-                    };
+                static function (Iterator $iterator) use ($callback, $initial): Iterator {
+                    foreach ($iterator as $key => $value) {
+                        yield $key => ($initial = $callback($initial, $value, $key, $iterator));
+                    }
+                };
     }
 }

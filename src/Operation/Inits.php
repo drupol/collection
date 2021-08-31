@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,12 +19,12 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Inits extends AbstractOperation
+final class Inits implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<int, list<T>>
+     * @return Closure(Iterator<TKey, T>): Iterator<int, list<T>>
      */
     public function __invoke(): Closure
     {
@@ -37,18 +37,15 @@ final class Inits extends AbstractOperation
              * @return array<TKey, T>
              */
             static function (array $carry, $value, $key): array {
+                // TODO: Use Pack ?
                 $carry[$key] = $value;
 
                 return $carry;
             };
 
-        /** @var Closure(Iterator<TKey, T>): Generator<int, list<T>> $inits */
-        $inits = Pipe::of()(
-            ScanLeft::of()($scanLeftCallback)([]),
-            Normalize::of()
+        return Pipe::ofTyped2(
+            (new ScanLeft())($scanLeftCallback)([]),
+            (new Normalize())
         );
-
-        // Point free style.
-        return $inits;
     }
 }

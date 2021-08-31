@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 use loophp\collection\Iterator\IterableIterator;
 use MultipleIterator;
 
@@ -21,14 +21,14 @@ use MultipleIterator;
  * @template TKey
  * @template T
  */
-final class Transpose extends AbstractOperation
+final class Transpose implements Operation
 {
     /**
      * @pure
      *
      * @psalm-suppress ImpureMethodCall - using MultipleIterator as an internal tool which is not returned
      *
-     * @return Closure(Iterator<TKey, T>): Generator<TKey, list<T>>
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, list<T>>
      */
     public function __invoke(): Closure
     {
@@ -51,20 +51,16 @@ final class Transpose extends AbstractOperation
              */
             static fn (array $carry, array $key, array $value): array => $value;
 
-        /** @var Closure(Iterator<TKey, T>): Generator<TKey, list<T>> $pipe */
-        $pipe = Pipe::of()(
-            Reduce::of()(
+        return Pipe::ofTyped3(
+            (new Reduce())(
                 static function (MultipleIterator $acc, iterable $iterable): MultipleIterator {
                     $acc->attachIterator(new IterableIterator($iterable));
 
                     return $acc;
                 }
             )(new MultipleIterator(MultipleIterator::MIT_NEED_ANY)),
-            Flatten::of()(1),
-            Associate::of()($callbackForKeys)($callbackForValues)
+            (new Flatten())(1),
+            (new Associate())($callbackForKeys)($callbackForValues)
         );
-
-        // Point free style.
-        return $pipe;
     }
 }

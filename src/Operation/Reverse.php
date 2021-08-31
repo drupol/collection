@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -19,12 +19,12 @@ use Iterator;
  * @template TKey
  * @template T
  */
-final class Reverse extends AbstractOperation
+final class Reverse implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<TKey, T, mixed, void>
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
     public function __invoke(): Closure
     {
@@ -37,14 +37,10 @@ final class Reverse extends AbstractOperation
              */
             static fn (array $carry, array $value): array => [...$value, ...$carry];
 
-        /** @var Closure(Iterator<TKey, T>): Generator<TKey, T> $pipe */
-        $pipe = Pipe::of()(
+        return Pipe::ofTyped3(
             (new Pack())(),
-            Reduce::of()($callback)([]),
+            (new Reduce())($callback)([]),
             (new Unpack())(),
         );
-
-        // Point free style.
-        return $pipe;
     }
 }

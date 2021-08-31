@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -21,12 +21,12 @@ use Iterator;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class GroupBy extends AbstractOperation
+final class GroupBy implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure((null | callable(TKey, T ): (TKey | null))):Closure (Iterator<TKey, T>): Generator<int, T|list<T>>
+     * @return Closure((null | callable(TKey, T ): (TKey | null))):Closure (Iterator<TKey, T>): Iterator<int, T|list<T>>
      */
     public function __invoke(): Closure
     {
@@ -34,7 +34,7 @@ final class GroupBy extends AbstractOperation
             /**
              * @param null|callable(TKey, T):(TKey|null) $callable
              *
-             * @return Closure(Iterator<TKey, T>): Generator<int, T|list<T>>
+             * @return Closure(Iterator<TKey, T>): Iterator<int, T|list<T>>
              */
             static function (?callable $callable = null): Closure {
                 /** @var callable(T, TKey): (TKey|null) $callable */
@@ -71,14 +71,10 @@ final class GroupBy extends AbstractOperation
                             return $collect;
                         };
 
-                /** @var Closure(Iterator<TKey, T>): Generator<int, list<T>> $pipe */
-                $pipe = Pipe::of()(
-                    Reduce::of()($reducerFactory($callable))([]),
-                    Flatten::of()(1)
+                return Pipe::ofTyped2(
+                    (new Reduce())($reducerFactory($callable))([]),
+                    (new Flatten())(1)
                 );
-
-                // Point free style.
-                return $pipe;
             };
     }
 }

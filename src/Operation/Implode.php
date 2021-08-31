@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
+use loophp\collection\Contract\Operation;
 
 /**
  * @immutable
@@ -21,35 +21,25 @@ use Iterator;
  *
  * phpcs:disable Generic.Files.LineLength.TooLong
  */
-final class Implode extends AbstractOperation
+final class Implode implements Operation
 {
     /**
      * @pure
      *
-     * @return Closure(string): Closure(Iterator<TKey, T>): Generator<TKey, string>
+     * @return Closure(Iterator<TKey, T>): Iterator<TKey, string>
      */
-    public function __invoke(): Closure
+    public function __invoke(string $glue): Closure
     {
-        return
+        $reducer =
             /**
-             * @return Closure(Iterator<TKey, T>): Generator<TKey, string>
+             * @param string|T $item
              */
-            static function (string $glue): Closure {
-                $reducer =
-                    /**
-                     * @param string|T $item
-                     */
-                    static fn (string $carry, $item): string => $carry .= $item;
+            static fn (string $carry, $item): string => $carry .= $item;
 
-                /** @var Closure(Iterator<TKey, T>): Generator<TKey, string> $pipe */
-                $pipe = Pipe::of()(
-                    Intersperse::of()($glue)(1)(0),
-                    Drop::of()(1),
-                    Reduce::of()($reducer)('')
-                );
-
-                // Point free style.
-                return $pipe;
-            };
+        return Pipe::ofTyped3(
+            (new Intersperse())($glue)(1)(0),
+            (new Drop())(1),
+            (new Reduce())($reducer)('')
+        );
     }
 }
