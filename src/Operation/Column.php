@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 /**
@@ -24,7 +23,7 @@ final class Column extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(mixed): Closure(Iterator<TKey, T>): Generator<int, mixed>
+     * @return Closure(mixed): Closure(Iterator<TKey, T>): Iterator<int, mixed>
      */
     public function __invoke(): Closure
     {
@@ -32,7 +31,7 @@ final class Column extends AbstractOperation
             /**
              * @param mixed $column
              *
-             * @return Closure(Iterator<TKey, T>): Generator<int, mixed>
+             * @return Closure(Iterator<TKey, T>): Iterator<int, mixed>
              */
             static function ($column): Closure {
                 $filterCallbackBuilder =
@@ -47,16 +46,13 @@ final class Column extends AbstractOperation
                          */
                         static fn ($value, $key, Iterator $iterator): bool => $key === $column;
 
-                /** @var Closure(Iterator<TKey, T>): Generator<int, mixed> $pipe */
-                $pipe = Pipe::of()(
-                    Transpose::of(),
-                    (new Filter())()($filterCallbackBuilder($column)),
-                    Head::of(),
-                    Flatten::of()(1)
-                );
-
                 // Point free style.
-                return $pipe;
+                return Pipe::ofTyped4(
+                    (new Transpose())(),
+                    (new Filter())()($filterCallbackBuilder($column)),
+                    (new Head())(),
+                    (new Flatten())()(1)
+                );
             };
     }
 }

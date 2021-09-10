@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 /**
@@ -24,7 +23,7 @@ final class Pack extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<int, array{0: TKey, 1: T}>
+     * @return Closure(Iterator<TKey, T>): Iterator<int, array{0: TKey, 1: T}>
      */
     public function __invoke(): Closure
     {
@@ -37,13 +36,10 @@ final class Pack extends AbstractOperation
              */
             static fn ($value, $key): array => [$key, $value];
 
-        /** @var Closure(Iterator<TKey, T>): Generator<int, array{0: TKey, 1: T}> $pipe */
-        $pipe = Pipe::of()(
-            Map::of()($mapCallback),
-            Normalize::of()
-        );
-
         // Point free style.
-        return $pipe;
+        return Pipe::ofTyped2(
+            (new Map())()($mapCallback),
+            (new Normalize())()
+        );
     }
 }

@@ -11,7 +11,6 @@ namespace loophp\collection\Operation;
 
 use ArrayIterator;
 use Closure;
-use Generator;
 use Iterator;
 
 /**
@@ -25,7 +24,7 @@ final class Tails extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<int, list<T>, mixed, void>
+     * @return Closure(Iterator<TKey, T>): Iterator<int, list<T>>
      */
     public function __invoke(): Closure
     {
@@ -33,16 +32,16 @@ final class Tails extends AbstractOperation
             /**
              * @param Iterator<TKey, T> $iterator
              *
-             * @return Generator<int, list<T>, mixed, void>
+             * @return Iterator<int, list<T>>
              */
-            static function (Iterator $iterator): Generator {
+            static function (Iterator $iterator): Iterator {
                 /** @var Iterator<int, array{0: TKey, 1: T}> $iterator */
-                $iterator = Pack::of()($iterator);
+                $iterator = (new Pack())()($iterator);
                 $data = [...$iterator];
 
                 while ([] !== $data) {
                     /** @var Iterator<TKey, T> $unpack */
-                    $unpack = Unpack::of()(new ArrayIterator($data));
+                    $unpack = (new Unpack())()(new ArrayIterator($data));
 
                     yield [...$unpack];
 

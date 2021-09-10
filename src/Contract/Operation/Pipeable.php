@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace loophp\collection\Contract\Operation;
 
+use Iterator;
 use loophp\collection\Contract\Collection;
 
 /**
@@ -24,9 +25,12 @@ interface Pipeable
      *
      * @see https://loophp-collection.readthedocs.io/en/stable/pages/api.html#pipe
      *
-     * @param callable(iterable<TKey, T>): iterable<TKey, T> ...$callbacks
+     * @template UKey
+     * @template U
      *
-     * @return Collection<TKey, T>
+     * @param callable(Iterator<TKey, T>): Iterator<UKey, U> $callback
+     *
+     * @return Collection<UKey, U>
      */
-    public function pipe(callable ...$callbacks): Collection;
+    public function pipe(callable $callback): Collection;
 }

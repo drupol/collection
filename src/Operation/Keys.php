@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 /**
@@ -24,17 +23,14 @@ final class Keys extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<int, TKey>
+     * @return Closure(Iterator<TKey, T>): Iterator<int, TKey>
      */
     public function __invoke(): Closure
     {
-        /** @var Closure(Iterator<TKey, T>): Generator<int, TKey> $pipe */
-        $pipe = Pipe::of()(
-            Flip::of(),
-            Normalize::of()
-        );
-
         // Point free style.
-        return $pipe;
+        return Pipe::ofTyped2(
+            (new Flip())(),
+            (new Normalize())()
+        );
     }
 }

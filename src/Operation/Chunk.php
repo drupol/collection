@@ -12,7 +12,6 @@ namespace loophp\collection\Operation;
 use ArrayIterator;
 use Closure;
 use EmptyIterator;
-use Generator;
 use Iterator;
 
 use function count;
@@ -28,23 +27,23 @@ final class Chunk extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(int...): Closure(Iterator<TKey, T>): Generator<int, list<T>>
+     * @return Closure(int...): Closure(Iterator<TKey, T>): Iterator<int, list<T>>
      */
     public function __invoke(): Closure
     {
         return
             /**
-             * @return Closure(Iterator<TKey, T>): Generator<int, list<T>>
+             * @return Closure(Iterator<TKey, T>): Iterator<int, list<T>>
              */
             static fn (int ...$sizes): Closure =>
                 /**
                  * @param Iterator<TKey, T> $iterator
                  *
-                 * @return Generator<int, list<T>>
+                 * @return Iterator<int, list<T>>
                  */
-                static function (Iterator $iterator) use ($sizes): Generator {
+                static function (Iterator $iterator) use ($sizes): Iterator {
                     /** @var Iterator<int, int> $sizesIterator */
-                    $sizesIterator = Cycle::of()(new ArrayIterator($sizes));
+                    $sizesIterator = (new Cycle())()(new ArrayIterator($sizes));
                     $sizesIterator->rewind();
 
                     $values = [];

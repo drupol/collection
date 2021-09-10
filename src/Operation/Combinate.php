@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 use function array_slice;
@@ -34,9 +33,9 @@ final class Combinate extends AbstractOperation
                 /**
                  * @param array<int, T> $dataset
                  *
-                 * @return Generator<array<int, T>>
+                 * @return Iterator<array<int, T>>
                  */
-                static function (array $dataset, int $length) use (&$getCombinations): Generator {
+                static function (array $dataset, int $length) use (&$getCombinations): Iterator {
                     for ($i = 0; count($dataset) - $length >= $i; ++$i) {
                         if (1 === $length) {
                             yield [$dataset[$i]];
@@ -57,9 +56,9 @@ final class Combinate extends AbstractOperation
                 /**
                  * @param Iterator<TKey, T> $iterator
                  *
-                 * @return Generator<int, array<int, T>>
+                 * @return Iterator<int, array<int, T>>
                  */
-                static function (Iterator $iterator) use ($length, $getCombinations): Generator {
+                static function (Iterator $iterator) use ($length, $getCombinations): Iterator {
                     $dataset = [...$iterator];
 
                     if (0 < $length) {

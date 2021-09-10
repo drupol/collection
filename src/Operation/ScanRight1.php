@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 /**
@@ -28,7 +27,7 @@ final class ScanRight1 extends AbstractOperation
      *
      * @template V
      *
-     * @return Closure(callable(T|V, T, TKey, Iterator<TKey, T>): V): Closure(Iterator<TKey, T>): Generator<int|TKey, T|V>
+     * @return Closure(callable(T|V, T, TKey, Iterator<TKey, T>): V): Closure(Iterator<TKey, T>): Iterator<int|TKey, T|V>
      */
     public function __invoke(): Closure
     {
@@ -36,18 +35,15 @@ final class ScanRight1 extends AbstractOperation
             /**
              * @param callable(T|V, T, TKey, Iterator<TKey, T>): V $callback
              *
-             * @return Closure(Iterator<TKey, T>): Generator<int|TKey, T|V>
+             * @return Closure(Iterator<TKey, T>): Iterator<int|TKey, T|V>
              */
             static function (callable $callback): Closure {
-                /** @var Closure(Iterator<TKey, T>): Generator<TKey, T|V> $pipe */
-                $pipe = Pipe::of()(
-                    Reverse::of(),
-                    ScanLeft1::of()($callback),
-                    Reverse::of()
-                );
-
                 // Point free style.
-                return $pipe;
+                return Pipe::ofTyped3(
+                    (new Reverse())(),
+                    (new ScanLeft1())()($callback),
+                    (new Reverse())()
+                );
             };
     }
 }

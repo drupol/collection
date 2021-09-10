@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 /**
@@ -24,7 +23,7 @@ final class Unpair extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<int, (TKey|T)>
+     * @return Closure(Iterator<TKey, T>): Iterator<int, (TKey|T)>
      */
     public function __invoke(): Closure
     {
@@ -32,9 +31,9 @@ final class Unpair extends AbstractOperation
             /**
              * @param Iterator<TKey, T> $iterator
              *
-             * @return Generator<int, (TKey|T)>
+             * @return Iterator<int, (TKey|T)>
              */
-            static function (Iterator $iterator): Generator {
+            static function (Iterator $iterator): Iterator {
                 foreach ($iterator as $key => $value) {
                     yield $key;
 

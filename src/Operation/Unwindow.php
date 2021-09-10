@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 /**
@@ -24,12 +23,12 @@ final class Unwindow extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, list<T>>): Generator<TKey, T|null>
+     * @return Closure(Iterator<TKey, list<T>>): Iterator<TKey, T|null>
      */
     public function __invoke(): Closure
     {
-        /** @var Closure(Iterator<TKey, list<T>>): Generator<TKey, T|null> $unwindow */
-        $unwindow = Map::of()(
+        /** @var Closure(Iterator<TKey, list<T>>): Iterator<TKey, T|null> $unwindow */
+        $unwindow = (new Map())()(
             /**
              * @param iterable<TKey, list<T>> $iterable
              *

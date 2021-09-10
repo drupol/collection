@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 use loophp\collection\Contract\Operation\Splitable;
 use loophp\collection\Utils\CallbacksArrayReducer;
@@ -28,27 +27,27 @@ final class Split extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(int): Closure((callable(T, TKey): bool)...): Closure(Iterator<TKey, T>): Generator<int, list<T>>
+     * @return Closure(int): Closure((callable(T, TKey): bool)...): Closure(Iterator<TKey, T>): Iterator<int, list<T>>
      */
     public function __invoke(): Closure
     {
         return
             /**
-             * @return Closure((callable(T, TKey): bool)...): Closure(Iterator<TKey, T>): Generator<int, list<T>>
+             * @return Closure((callable(T, TKey): bool)...): Closure(Iterator<TKey, T>): Iterator<int, list<T>>
              */
             static fn (int $type = Splitable::BEFORE): Closure =>
                 /**
                  * @param callable(T, TKey): bool ...$callbacks
                  *
-                 * @return Closure(Iterator<TKey, T>): Generator<int, list<T>>
+                 * @return Closure(Iterator<TKey, T>): Iterator<int, list<T>>
                  */
                 static fn (callable ...$callbacks): Closure =>
                     /**
                      * @param Iterator<TKey, T> $iterator
                      *
-                     * @return Generator<int, list<T>>
+                     * @return Iterator<int, list<T>>
                      */
-                    static function (Iterator $iterator) use ($type, $callbacks): Generator {
+                    static function (Iterator $iterator) use ($type, $callbacks): Iterator {
                         $carry = [];
 
                         foreach ($iterator as $key => $current) {

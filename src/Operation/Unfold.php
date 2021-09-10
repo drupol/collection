@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
+use Iterator;
 
 /**
  * @immutable
@@ -25,7 +25,7 @@ final class Unfold extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(T...): Closure(callable(mixed|T...): (mixed|array<TKey, T>)): Closure(): Generator<int, T>
+     * @return Closure(T...): Closure(callable(mixed|T...): (mixed|array<TKey, T>)): Closure(): Iterator<int, T>
      */
     public function __invoke(): Closure
     {
@@ -33,19 +33,19 @@ final class Unfold extends AbstractOperation
             /**
              * @param T ...$parameters
              *
-             * @return Closure(callable(mixed|T...): (array<TKey, T>)): Closure(): Generator<int, T>
+             * @return Closure(callable(mixed|T...): (array<TKey, T>)): Closure(): Iterator<int, T>
              */
             static fn (...$parameters): Closure =>
                 /**
                  * @param callable(mixed|T...): (mixed|array<TKey, T>) $callback
                  *
-                 * @return Closure(): Generator<int, T>
+                 * @return Closure(): Iterator<int, T>
                  */
                 static fn (callable $callback): Closure =>
                     /**
-                     * @return Generator<int, T>
+                     * @return Iterator<int, T>
                      */
-                    static function () use ($parameters, $callback): Generator {
+                    static function () use ($parameters, $callback): Iterator {
                         while (true) {
                             /** @var T $parameters */
                             $parameters = $callback(...array_values((array) $parameters));

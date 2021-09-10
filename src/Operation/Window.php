@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 use function array_slice;
@@ -26,17 +25,17 @@ final class Window extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(int): Closure(Iterator<TKey, T>): Generator<TKey, list<T>>
+     * @return Closure(int): Closure(Iterator<TKey, T>): Iterator<TKey, list<T>>
      */
     public function __invoke(): Closure
     {
         return
             /**
-             * @return Closure(Iterator<TKey, T>): Generator<TKey, list<T>>
+             * @return Closure(Iterator<TKey, T>): Iterator<TKey, list<T>>
              */
             static function (int $size): Closure {
-                /** @var Closure(Iterator<TKey, T>): Generator<TKey, list<T>> $reduction */
-                $reduction = Reduction::of()(
+                /** @var Closure(Iterator<TKey, T>): Iterator<TKey, list<T>> $reduction */
+                $reduction = (new Reduction())()(
                     /**
                      * @param list<T> $stack
                      * @param T $current

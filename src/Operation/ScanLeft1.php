@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 /**
@@ -28,7 +27,7 @@ final class ScanLeft1 extends AbstractOperation
      *
      * @template V
      *
-     * @return Closure(callable(T|V, T, TKey, Iterator<TKey, T>): V): Closure(Iterator<TKey, T>): Generator<int|TKey, T|V>
+     * @return Closure(callable(T|V, T, TKey, Iterator<TKey, T>): V): Closure(Iterator<TKey, T>): Iterator<int|TKey, T|V>
      */
     public function __invoke(): Closure
     {
@@ -36,25 +35,22 @@ final class ScanLeft1 extends AbstractOperation
             /**
              * @param callable(T|V, T, TKey, Iterator<TKey, T>): V $callback
              *
-             * @return Closure(Iterator<TKey, T>): Generator<int|TKey, T|V>
+             * @return Closure(Iterator<TKey, T>): Iterator<int|TKey, T|V>
              */
             static fn (callable $callback): Closure =>
                 /**
                  * @param Iterator<TKey, T> $iterator
                  *
-                 * @return Generator<int|TKey, T|V>
+                 * @return Iterator<int|TKey, T|V>
                  */
                 static function (Iterator $iterator) use ($callback): Iterator {
                     $initial = $iterator->current();
 
-                    /** @var Closure(Iterator<TKey, T>): Generator<int|TKey, T|V> $pipe */
-                    $pipe = Pipe::of()(
-                        Tail::of(),
-                        Reduction::of()($callback)($initial),
-                        Prepend::of()($initial)
-                    );
-
-                    return $pipe($iterator);
+                    return Pipe::ofTyped3(
+                        (new Tail())(),
+                        (new Reduction())()($callback)($initial),
+                        (new Prepend())()($initial)
+                    )($iterator);
                 };
     }
 }

@@ -12,9 +12,10 @@ namespace loophp\collection\Operation;
 use ArrayIterator;
 use Closure;
 use Exception;
-use Generator;
 use Iterator;
 use loophp\collection\Contract\Operation;
+
+use function count;
 
 /**
  * @immutable
@@ -29,17 +30,17 @@ final class Sort extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(int): Closure(callable(T|TKey, T|TKey): int): Closure(Iterator<TKey, T>): Generator<TKey, T>
+     * @return Closure(int): Closure(callable(T|TKey, T|TKey): int): Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
     public function __invoke(): Closure
     {
         return
             /**
-             * @return Closure(callable(T|TKey, T|TKey): int): Closure(Iterator<TKey, T>): Generator<TKey, T>
+             * @return Closure(callable(T|TKey, T|TKey): int): Closure(Iterator<TKey, T>): Iterator<TKey, T>
              */
             static fn (int $type = Operation\Sortable::BY_VALUES): Closure =>
                 /**
-                 * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
+                 * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
                  */
                 static function (?callable $callback = null) use ($type): Closure {
                     $callback ??=
@@ -53,7 +54,7 @@ final class Sort extends AbstractOperation
                     /**
                      * @param Iterator<TKey, T> $iterator
                      *
-                     * @return Generator<TKey, T>
+                     * @return Iterator<TKey, T>
                      */
                     static function (Iterator $iterator) use ($type, $callback): Iterator {
                         if (Operation\Sortable::BY_VALUES !== $type && Operation\Sortable::BY_KEYS !== $type) {
@@ -62,12 +63,12 @@ final class Sort extends AbstractOperation
 
                         $operations = Operation\Sortable::BY_VALUES === $type ?
                             [
-                                'before' => [Pack::of()],
-                                'after' => [Unpack::of()],
+                                'before' => [(new Pack())()],
+                                'after' => [(new Unpack())()],
                             ] :
                             [
-                                'before' => [Flip::of(), Pack::of()],
-                                'after' => [Unpack::of(), Flip::of()],
+                                'before' => [(new Flip())(), (new Pack())()],
+                                'after' => [(new Unpack())(), (new Flip())()],
                             ];
 
                         $sortCallback =
@@ -83,13 +84,20 @@ final class Sort extends AbstractOperation
                                  */
                                 static fn (array $left, array $right): int => $callback($left[1], $right[1]);
 
-                        /** @var callable(Iterator<TKey, T>): Generator<int, array{0:TKey, 1:T}> | callable(Iterator<TKey, T>): Generator<int, array{0:T, 1:TKey}> $before */
-                        $before = Pipe::of()(...$operations['before']);
+                        $before = match (count($operations['before'])) {
+                            1 => Pipe::ofTyped1(...$operations['before']),
+                            2 => Pipe::ofTyped2(...$operations['before']),
+                        };
 
                         $arrayIterator = new ArrayIterator([...$before($iterator)]);
                         $arrayIterator->uasort($sortCallback($callback));
 
-                        return Pipe::of()(...$operations['after'])($arrayIterator);
+                        $pipe = match (count($operations['after'])) {
+                            1 => Pipe::ofTyped1(...$operations['after']),
+                            2 => Pipe::ofTyped2(...$operations['after']),
+                        };
+
+                        return $pipe($arrayIterator);
                     };
                 };
     }

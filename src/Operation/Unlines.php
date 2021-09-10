@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 use const PHP_EOL;
@@ -26,12 +25,12 @@ final class Unlines extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, (T|string)>): Generator<TKey, string>
+     * @return Closure(Iterator<TKey, (T|string)>): Iterator<TKey, string>
      */
     public function __invoke(): Closure
     {
-        /** @var Closure(Iterator<TKey, (T|string)>):Generator<TKey, string> $implode */
-        $implode = Implode::of()(PHP_EOL);
+        /** @var Closure(Iterator<TKey, (T|string)>):Iterator<TKey, string> $implode */
+        $implode = (new Implode())()(PHP_EOL);
 
         // Point free style.
         return $implode;

@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use InvalidArgumentException;
 use Iterator;
 
@@ -25,7 +24,7 @@ final class Intersperse extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(T): Closure(int): Closure(int): Closure(Iterator<TKey, T>): Generator<int|TKey, T>
+     * @return Closure(T): Closure(int): Closure(int): Closure(Iterator<TKey, T>): Iterator<int|TKey, T>
      */
     public function __invoke(): Closure
     {
@@ -33,23 +32,23 @@ final class Intersperse extends AbstractOperation
             /**
              * @param T $element
              *
-             * @return Closure(int): Closure(int): Closure(Iterator<TKey, T>): Generator<int|TKey, T>
+             * @return Closure(int): Closure(int): Closure(Iterator<TKey, T>): Iterator<int|TKey, T>
              */
             static fn ($element): Closure =>
                 /**
-                 * @return Closure(int): Closure(Iterator<TKey, T>): Generator<int|TKey, T>
+                 * @return Closure(int): Closure(Iterator<TKey, T>): Iterator<int|TKey, T>
                  */
                 static fn (int $atEvery): Closure =>
                     /**
-                     * @return Closure(Iterator<TKey, T>): Generator<int|TKey, T>
+                     * @return Closure(Iterator<TKey, T>): Iterator<int|TKey, T>
                      */
                     static fn (int $startAt): Closure =>
                         /**
                          * @param Iterator<TKey, T> $iterator
                          *
-                         * @return Generator<int|TKey, T>
+                         * @return Iterator<int|TKey, T>
                          */
-                        static function (Iterator $iterator) use ($element, $atEvery, $startAt): Generator {
+                        static function (Iterator $iterator) use ($element, $atEvery, $startAt): Iterator {
                             if (0 > $atEvery) {
                                 throw new InvalidArgumentException(
                                     'The second parameter must be a positive integer.'

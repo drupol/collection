@@ -12,9 +12,10 @@ namespace loophp\collection\Operation;
 use Closure;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\ClosureExpressionVisitor;
-use Generator;
 use Iterator;
 use loophp\collection\Contract\Operation\Sortable;
+
+use function count;
 
 /**
  * @immutable
@@ -29,13 +30,13 @@ final class Matching extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(Criteria): Closure(Iterator<TKey, T>): Generator<TKey, T>
+     * @return Closure(Criteria): Closure(Iterator<TKey, T>): Iterator<TKey, T>
      */
     public function __invoke(): Closure
     {
         return
             /**
-             * @return Closure(Iterator<TKey, T>): Generator<TKey, T>
+             * @return Closure(Iterator<TKey, T>): Iterator<TKey, T>
              */
             static function (Criteria $criteria): Closure {
                 $expr = $criteria->getWhereExpression();
@@ -54,21 +55,22 @@ final class Matching extends AbstractOperation
                         $next = ClosureExpressionVisitor::sortByField($field, Criteria::DESC === $ordering ? -1 : 1, $next);
                     }
 
-                    $pipes[] = Sort::of()(Sortable::BY_VALUES)($next);
+                    $pipes[] = (new Sort())()(Sortable::BY_VALUES)($next);
                 }
 
                 $offset = $criteria->getFirstResult();
                 $length = $criteria->getMaxResults();
 
                 if (null !== $offset || null !== $length) {
-                    $pipes[] = Limit::of()($length)((int) $offset);
+                    $pipes[] = (new Limit())()($length)((int) $offset);
                 }
 
-                /** @var Closure(Iterator<TKey, T>): Generator<TKey, T> $pipe */
-                $pipe = Pipe::of()(...$pipes);
-
-                // Point free style.
-                return $pipe;
+                return match (count($pipes)) {
+                    0 => (new Pipe())(),
+                    1 => Pipe::ofTyped1(...$pipes),
+                    2 => Pipe::ofTyped2(...$pipes),
+                    3 => Pipe::ofTyped3(...$pipes),
+                };
             };
     }
 }

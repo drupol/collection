@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 /**
@@ -24,7 +23,7 @@ final class Contains extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(T ...$values): Closure(Iterator<TKey, T>): Generator<TKey, bool>
+     * @return Closure(T ...$values): Closure(Iterator<TKey, T>): Iterator<TKey, bool>
      */
     public function __invoke(): Closure
     {
@@ -32,7 +31,7 @@ final class Contains extends AbstractOperation
             /**
              * @param T ...$values
              *
-             * @return Closure(Iterator<TKey, T>): Generator<TKey, bool>
+             * @return Closure(Iterator<TKey, T>): Iterator<TKey, bool>
              */
             static function (...$values): Closure {
                 $callback =
@@ -45,8 +44,8 @@ final class Contains extends AbstractOperation
                          */
                         static fn ($right): bool => $left === $right;
 
-                /** @var Closure(Iterator<TKey, T>): Generator<TKey, bool> $matchOne */
-                $matchOne = MatchOne::of()(static fn (): bool => true)(...array_map($callback, $values));
+                /** @var Closure(Iterator<TKey, T>): Iterator<TKey, bool> $matchOne */
+                $matchOne = (new MatchOne())()(static fn (): bool => true)(...array_map($callback, $values));
 
                 // Point free style.
                 return $matchOne;

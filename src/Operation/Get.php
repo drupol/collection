@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 /**
@@ -24,7 +23,7 @@ final class Get extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(TKey): Closure (T|null): Closure(Iterator<TKey, T>): Generator<TKey, T|null>
+     * @return Closure(TKey): Closure (T|null): Closure(Iterator<TKey, T>): Iterator<TKey, T|null>
      */
     public function __invoke(): Closure
     {
@@ -32,13 +31,13 @@ final class Get extends AbstractOperation
             /**
              * @param TKey $keyToGet
              *
-             * @return Closure(T|null): Closure(Iterator<TKey, T>): Generator<TKey, T|null>
+             * @return Closure(T|null): Closure(Iterator<TKey, T>): Iterator<TKey, T|null>
              */
             static fn ($keyToGet): Closure =>
                 /**
                  * @param T|null $default
                  *
-                 * @return Closure(Iterator<TKey, T>): Generator<TKey, T|null>
+                 * @return Closure(Iterator<TKey, T>): Iterator<TKey, T|null>
                  */
                 static function ($default) use ($keyToGet): Closure {
                     $filterCallback =
@@ -48,15 +47,12 @@ final class Get extends AbstractOperation
                          */
                         static fn ($value, $key): bool => $key === $keyToGet;
 
-                    /** @var Closure(Iterator<TKey, T>): (Generator<TKey, T|null>) $pipe */
-                    $pipe = Pipe::of()(
-                        (new Filter())()($filterCallback),
-                        Append::of()($default),
-                        Head::of()
-                    );
-
                     // Point free style.
-                    return $pipe;
+                    return Pipe::ofTyped3(
+                        (new Filter())()($filterCallback),
+                        (new Append())()($default),
+                        (new Head())()
+                    );
                 };
     }
 }

@@ -11,7 +11,6 @@ namespace loophp\collection\Operation;
 
 use ArrayIterator;
 use Closure;
-use Generator;
 use Iterator;
 use MultipleIterator;
 
@@ -28,7 +27,7 @@ final class Combine extends AbstractOperation
      *
      * @template U
      *
-     * @return Closure(U...): Closure(Iterator<TKey, T>): Generator<null|U, null|T>
+     * @return Closure(U...): Closure(Iterator<TKey, T>): Iterator<null|U, null|T>
      */
     public function __invoke(): Closure
     {
@@ -36,7 +35,7 @@ final class Combine extends AbstractOperation
             /**
              * @param U ...$keys
              *
-             * @return Closure(Iterator<TKey, T>): Generator<null|U, null|T>
+             * @return Closure(Iterator<TKey, T>): Iterator<null|U, null|T>
              */
             static function (...$keys): Closure {
                 $buildMultipleIterator =
@@ -60,15 +59,12 @@ final class Combine extends AbstractOperation
                             };
                     };
 
-                /** @var Closure(Iterator<TKey, T>): Generator<null|U, null|T> $pipe */
-                $pipe = Pipe::of()(
-                    $buildMultipleIterator(new ArrayIterator($keys)),
-                    Flatten::of()(1),
-                    Pair::of(),
-                );
-
                 // Point free style.
-                return $pipe;
+                return Pipe::ofTyped3(
+                    $buildMultipleIterator(new ArrayIterator($keys)),
+                    (new Flatten())()(1),
+                    (new Pair())(),
+                );
             };
     }
 }

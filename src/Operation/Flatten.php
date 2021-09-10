@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 use loophp\collection\Iterator\IterableIterator;
 
@@ -25,19 +24,24 @@ final class Flatten extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(int): Closure(Iterator<TKey, T>): Generator<mixed, mixed>
+     * @template UKey
+     * @template U
+     *
+     * @return Closure(int): Closure(Iterator<TKey, (T|iterable<UKey, U>)>): Iterator<TKey|UKey, T|U>
      */
     public function __invoke(): Closure
     {
         return
             /**
-             * @return Closure(Iterator<TKey, T>): Generator<mixed, mixed>
+             * @return Closure(Iterator<TKey, (T|iterable<UKey, U>)>): Iterator<TKey|UKey, T|U>
              */
             static fn (int $depth): Closure =>
                 /**
-                 * @param Iterator<TKey, T> $iterator
+                 * @param Iterator<TKey, (T|iterable<UKey, U>)> $iterator
+                 *
+                 * @return Iterator<TKey|UKey, T|U>
                  */
-                static function (Iterator $iterator) use ($depth): Generator {
+                static function (Iterator $iterator) use ($depth): Iterator {
                     foreach ($iterator as $key => $value) {
                         if (false === is_iterable($value)) {
                             yield $key => $value;
@@ -46,10 +50,7 @@ final class Flatten extends AbstractOperation
                         }
 
                         if (1 !== $depth) {
-                            /** @var callable(Iterator<TKey, T>): Generator<mixed, mixed> $flatten */
-                            $flatten = Flatten::of()($depth - 1);
-
-                            $value = $flatten(new IterableIterator($value));
+                            $value = (new Flatten())()($depth - 1)(new IterableIterator($value));
                         }
 
                         yield from $value;

@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 use const INF;
@@ -28,35 +27,35 @@ final class Scale extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(float): Closure(float): Closure(float): Closure(float): Closure(float): Closure(Iterator<TKey, float|int>): Generator<TKey, float|int>
+     * @return Closure(float): Closure(float): Closure(float): Closure(float): Closure(float): Closure(Iterator<TKey, float|int>): Iterator<TKey, float|int>
      */
     public function __invoke(): Closure
     {
         return
             /**
-             * @return Closure(float): Closure(float): Closure(float): Closure(float): Closure(Iterator<TKey, float|int>): Generator<TKey, float|int>
+             * @return Closure(float): Closure(float): Closure(float): Closure(float): Closure(Iterator<TKey, float|int>): Iterator<TKey, float|int>
              */
             static fn (float $lowerBound): Closure =>
                 /**
-                 * @return Closure(float): Closure(float): Closure(float): Closure(Iterator<TKey, float|int>): Generator<TKey, float|int>
+                 * @return Closure(float): Closure(float): Closure(float): Closure(Iterator<TKey, float|int>): Iterator<TKey, float|int>
                  */
                 static fn (float $upperBound): Closure =>
                     /**
-                     * @return Closure(float): Closure(float): Closure(Iterator<TKey, float|int>): Generator<TKey, float|int>
+                     * @return Closure(float): Closure(float): Closure(Iterator<TKey, float|int>): Iterator<TKey, float|int>
                      */
                     static fn (float $wantedLowerBound = 0.0): Closure =>
                         /**
-                         * @return Closure(float): Closure(Iterator<TKey, float|int>): Generator<TKey, float|int>
+                         * @return Closure(float): Closure(Iterator<TKey, float|int>): Iterator<TKey, float|int>
                          */
                         static fn (float $wantedUpperBound = 1.0): Closure =>
                             /**
-                             * @return Closure(Iterator<TKey, float|int>): Generator<TKey, float|int>
+                             * @return Closure(Iterator<TKey, float|int>): Iterator<TKey, float|int>
                              */
                             static function (float $base = 0.0) use ($lowerBound, $upperBound, $wantedLowerBound, $wantedUpperBound): Closure {
                                 $wantedLowerBound = (0.0 === $wantedLowerBound) ? (0.0 === $base ? 0.0 : 1.0) : $wantedLowerBound;
                                 $wantedUpperBound = (1.0 === $wantedUpperBound) ? (0.0 === $base ? 1.0 : $base) : $wantedUpperBound;
-                                /** @var callable(Generator<TKey, (float | int)>):Generator<TKey, float> $mapper */
-                                $mapper = Map::of()(
+
+                                $mapper = (new Map())()(
                                     /**
                                      * @param float|int $v
                                      */
@@ -82,11 +81,8 @@ final class Scale extends AbstractOperation
                                     static fn ($item): bool => $item <= $upperBound
                                 );
 
-                                /** @var Closure(Iterator<TKey, (float | int)>):(Generator<TKey, float|int>) $pipe */
-                                $pipe = Pipe::of()($filter, $mapper);
-
                                 // Point free style.
-                                return $pipe;
+                                return Pipe::ofTyped2($filter, $mapper);
                             };
     }
 }

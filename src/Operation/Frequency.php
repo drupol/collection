@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace loophp\collection\Operation;
 
 use Closure;
-use Generator;
 use Iterator;
 
 /**
@@ -24,7 +23,7 @@ final class Frequency extends AbstractOperation
     /**
      * @pure
      *
-     * @return Closure(Iterator<TKey, T>): Generator<int, T>
+     * @return Closure(Iterator<TKey, T>): Iterator<int, T>
      */
     public function __invoke(): Closure
     {
@@ -56,14 +55,11 @@ final class Frequency extends AbstractOperation
                 return $storage;
             };
 
-        /** @var Closure(Iterator<TKey, T>): Generator<int, T> $pipe */
-        $pipe = Pipe::of()(
-            Reduce::of()($reduceCallback)([]),
-            Flatten::of()(1),
-            Unpack::of()
-        );
-
         // Point free style.
-        return $pipe;
+        return Pipe::ofTyped3(
+            (new Reduce())()($reduceCallback)([]),
+            (new Flatten())()(1),
+            (new Unpack())()
+        );
     }
 }
