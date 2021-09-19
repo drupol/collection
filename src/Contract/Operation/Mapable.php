@@ -15,6 +15,7 @@ use loophp\collection\Contract\Collection;
 /**
  * @template TKey
  * @template T
+ * @template V
  */
 interface Mapable
 {
@@ -22,8 +23,6 @@ interface Mapable
      * Apply a single callback to every item of a collection and use the return value.
      *
      * @see https://loophp-collection.readthedocs.io/en/stable/pages/api.html#map
-     *
-     * @template V
      *
      * @param callable(T=, TKey=, Iterator<TKey, T>=): V $callback
      *

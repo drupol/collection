@@ -134,6 +134,7 @@ use loophp\collection\Contract\Operation\Zipable;
  *
  * @template TKey
  * @template T
+ * @template V
  *
  * @template-extends Allable<TKey, T>
  * @template-extends Appendable<TKey, T>
@@ -192,7 +193,7 @@ use loophp\collection\Contract\Operation\Zipable;
  * @template-extends Lastable<TKey, T>
  * @template-extends Limitable<TKey, T>
  * @template-extends Linesable<TKey, T>
- * @template-extends Mapable<TKey, T>
+ * @template-extends Mapable<TKey, T, V>
  * @template-extends MapNable<TKey, T>
  * @template-extends Matchable<TKey, T>
  * @template-extends Matchingable<TKey, T>
