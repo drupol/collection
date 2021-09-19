@@ -150,6 +150,19 @@ use const PHP_INT_MIN;
  * phpcs:disable Generic.Files.LineLength.TooLong
  *
  * @implements \loophp\collection\Contract\Collection<TKey, T>
+ *
+ * @property HigherOrderCollectionProxy $contains
+ * @property HigherOrderCollectionProxy $every
+ * @property HigherOrderCollectionProxy $filter
+ * @property HigherOrderCollectionProxy $first
+ * @property HigherOrderCollectionProxy $map
+ * @property HigherOrderCollectionProxy $partition
+ * @property HigherOrderCollectionProxy $skipUntil
+ * @property HigherOrderCollectionProxy $skipWhile
+ * @property HigherOrderCollectionProxy $unique
+ * @property HigherOrderCollectionProxy $unless
+ * @property HigherOrderCollectionProxy $until
+ * @property HigherOrderCollectionProxy $when
  */
 final class Collection implements CollectionInterface
 {
@@ -173,6 +186,14 @@ final class Collection implements CollectionInterface
     {
         $this->source = $callable;
         $this->parameters = $parameters;
+    }
+
+    /**
+     * @return HigherOrderCollectionProxy<TKey, T>
+     */
+    public function __get(string $key)
+    {
+        return $this->proxy($key);
     }
 
     public function all(): array
@@ -750,6 +771,14 @@ final class Collection implements CollectionInterface
     public function product(iterable ...$iterables): CollectionInterface
     {
         return new self(Product::of()(...$iterables), [$this->getIterator()]);
+    }
+
+    /**
+     * @return HigherOrderCollectionProxy<TKey, T>
+     */
+    public function proxy(string $key): HigherOrderCollectionProxy
+    {
+        return new HigherOrderCollectionProxy($this, $key);
     }
 
     public function random(int $size = 1, ?int $seed = null): CollectionInterface
